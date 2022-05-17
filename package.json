@@ -1,0 +1,52 @@
+{
+  "name": "react-ui",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/esm/index.mjs",
+  "unpkg": "dist/index.umd.min.js",
+  "imports": {
+    "#ui": "./src/index.js"
+  },
+  "scripts": {
+    "build": "rm -rf dist/*; rollup -c",
+    "debug": "f () { export RUN=debug; export GLOB=\"$1\"; rollup -w -c rollup.tests.config.js; }; f",
+    "prepublishOnly": "npm run build",
+    "test": "f () { export RUN=test; export GLOB=\"$1\"; rollup -c rollup.tests.config.js; }; f",
+    "test:watch": "f () { export RUN=test; export GLOB=\"$1\"; rollup -w -c rollup.tests.config.js; }; f"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.17.10",
+    "@babel/preset-react": "^7.16.7",
+    "@linaria/babel-preset": "^3.0.0-beta.18",
+    "@linaria/core": "^3.0.0-beta.18",
+    "@linaria/react": "^3.0.0-beta.18",
+    "@linaria/rollup": "^3.0.0-beta.18",
+    "@linaria/shaker": "^3.0.0-beta.18",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-replace": "^4.0.0",
+    "browser-run": "^11.0.0",
+    "glob-module-file": "^3.0.2",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "rollup": "^2.73.0",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-serve": "^1.1.0",
+    "uvu": "^0.5.3"
+  },
+  "dependencies": {
+    "prop-types": "^15.8.1"
+  },
+  "peerDependencies": {
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  }
+}
