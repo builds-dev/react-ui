@@ -7,8 +7,8 @@ import replace from '@rollup/plugin-replace'
 import browser_run from 'browser-run'
 import glob_module_files from 'glob-module-file'
 import linaria from '@linaria/rollup'
-import css from 'rollup-plugin-css-only'
 import babel_config from './.babelrc.json'
+import postcss from 'rollup-plugin-postcss'
 
 export default {
 	input: 'test/test.js',
@@ -39,21 +39,24 @@ export default {
 			}
 		},
 		nodeResolve({
-			browser: true
+			browser: true,
+			preferBuiltins: false
 		}),
 		commonjs(),
 		replace({
 			preventAssignment: false,
 			values: {
-				'process.env.NODE_ENV': JSON.stringify('development')
+				'process.env.NODE_ENV': JSON.stringify('development'),
+				'process.env.RUN': JSON.stringify(process.env.RUN)
 			}
 		}),
 		linaria({
 			preprocessor: 'none',
 			sourceMap: process.env.NODE_ENV !== 'production'
 		}),
-		css({
-			output: 'app.css'
+		postcss({
+		  extract: false,
+			plugins: []
 		}),
 		babel({
 			babelHelpers: 'bundled',

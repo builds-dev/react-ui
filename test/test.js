@@ -1,18 +1,20 @@
-import { suite } from 'uvu'
+import { basename, dirname } from 'path-browserify'
+import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 import tests from '../build/test-components.js'
 import React from 'react'
 import * as ReactDOM from 'react-dom/client'
+import { act } from './util.js'
 
-// import { layout, layout_y } from '../src/layout'
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const keep_alive = !navigator.userAgent.toLowerCase().includes('electron')
+const keep_alive = process.env.RUN === 'debug'
 
 const suites = tests
 	.map(({ path: file, export: test_f }) => ({
 		test_f,
-		test_name: test_f.name.split('_').slice(0, -1).join(' '),
-		suite_name: file.split('/').slice(-2)[0]
+		test_name: basename(file, '.test.jsx').split('_').join(' '),
+		suite_name: basename(dirname(file))
 	}))
 	.reduce(
 		(suites, { suite_name, ...test }) => {
@@ -23,37 +25,27 @@ const suites = tests
 		{}
 	)
 
-// document.body.className = `${layout} ${layout_y}`
-// Object.assign(document.body.style, {
-// 	margin: 0,
-// 	padding: 0,
-// 	minHeight: '100vh'
-// })
-
-const animation_frame = () => new Promise(resolve => window.requestAnimationFrame(resolve))
-
-Promise.all(
-	Object.entries(suites)
-		.map(([ suite_name, tests ]) => {
-			const test = suite(suite_name)
-			const promises = tests.map(({ test_name, test_f }) => new Promise(resolve => {
-				test(test_name, async () => {
-					try {
-						let async_work = () => Promise.resolve()
-						const destroy_after = f => async_work = f
-						// const component = ReactDOM.createRoot(document.body).render(React.createElement(Component, { destroy_after }))
-						const destroy = test_f()
-						await animation_frame()
-						// await async_work().finally(() => keep_alive || component.stop())
-						await async_work().finally(() => keep_alive || destroy())
-					} finally {
-						resolve()
-					}
-				})
-			}))
-			test.run()
-			return Promise.all(promises)
-		})
-)
-	.then(animation_frame)
-	.then(() => keep_alive || window.close())
+Object.entries(suites)
+	.reduce(
+		(previous_suite_promise, [ suite_name, tests ]) =>
+			previous_suite_promise.then(() => {
+				return tests.reduce(
+					(previous_test_promise, { test_name, test_f }) =>
+						previous_test_promise.then(() => {
+							return new Promise(resolve => {
+								test(`${suite_name}: ${test_name}`, async () => {
+									const unmount = await Promise.resolve(test_f())
+									keep_alive || await act(unmount)
+									resolve()
+								})
+								return test.run()
+							})
+						})
+					,
+					Promise.resolve()
+				)
+			})
+		,
+		Promise.resolve()
+	)
+	.finally(() => keep_alive || window.close())
