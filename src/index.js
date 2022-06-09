@@ -1,4 +1,5 @@
 export * as align from './align.js'
+export * from './edges.js'
 export * from './Box.jsx'
 export * from './Column.jsx'
 export * from './mount.js'

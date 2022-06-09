@@ -1,5 +1,4 @@
 import React from 'react'
-import { Layout_context } from './Layout_context.js'
 import { padding_to_css } from './lib.js'
 
 /*

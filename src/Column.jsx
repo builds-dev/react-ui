@@ -1,11 +1,11 @@
 import React from 'react'
-import { column, layout_y_style, layout_y_child_style } from './layout.js'
-import { Layout_parent } from './Layout_parent.jsx'
+import { column, compute_style_for_layout_y_parent, compute_style_for_layout_y_child } from './layout.js'
+import { Layout_box } from './Layout_box.jsx'
 
 export const Column = props =>
-	<Layout_parent
+	<Layout_box
+		layout_class_name={column}
+		compute_style_as_layout_parent={compute_style_for_layout_y_parent}
+		compute_style_for_layout_child={compute_style_for_layout_y_child}
 		{...props}
-		layout_class={column}
-		layout_child_style={layout_y_child_style}
-		layout_style={layout_y_style}
 	/>

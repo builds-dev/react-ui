@@ -1,31 +1,33 @@
-export const property = type => value => ({ type, value })
+export const property = (type, to_css) => value => ({ type, value, value_css: to_css (value) })
 
-export const px = property ('px')
+const css_infinity = 100000000
 
-export const ratio = property ('ratio')
+export const px = property ('px', value => (value === Infinity ? css_infinity : value) + 'px')
 
-export const minimum_default = property ('px') (0)
-export const maximum_default = property ('px') (Infinity)
+export const ratio = property ('ratio', value => (value === Infinity ? css_infinity : value * 100) + '%')
+
+export const minimum_default = px (0)
+export const maximum_default = px (Infinity)
 
 const length = type => value => ({ type, value, minimum: minimum_default, maximum: maximum_default })
 
-export const px_length = length ('px')
-
-export const ratio_length = length ('ratio')
+// these make sense, but they make for an annoying api: pipe (minimum (px(a)), maximum (px(b))) (px_length (100))
+// export const px_length = length ('px')
+// export const ratio_length = length ('ratio')
 
 export const flex = grow => shrink => length ('flex') ({ grow, shrink })
 
-export const conform = flex (1) (1)
+export const conform = (conform => Object.assign (conform, conform (1))) (n => flex (n) (1))
 
 export const grow = (grow => Object.assign (grow, grow (1))) (n => flex (n) (0))
 
-export const shrink = (shrink => Object.assign (shrink, shrink (1))) (n => flex (0) (1))
+export const shrink = (shrink => Object.assign (shrink, shrink (1))) (n => flex (0) (n))
 
 export const content = grow (0)
 
 export const fill = (fill => Object.assign (fill, fill (1))) (length ('fill'))
 
-export const format_length_property = length => typeof length === 'number' ? { type: 'px', value: length } : length
+export const format_length_property = length => typeof length === 'number' ? px(length) : length
 
 /*
 	Due to this being abstraction over css and the possibility of minimum/maximum as type: 'ratio',
@@ -53,10 +55,9 @@ export const format_length = length =>
 			Object.assign(px (length), { maximum: maximum_default, minimum: minimum_default })
 		:
 			{
-				maximum: length.maximum === undefined ? maximum_default : format_length_property (length.maximum),
-				minimum: length.minimum === undefined ? minimum_default : format_length_property (length.minimum),
-				type: length.type,
-				value: length.value
+				...length,
+				maximum: length.maximum ?? maximum_default,
+				minimum: length.minimum ?? minimum_default
 			}
 
 const modifier = prop => value => length => ({ ...format_length(length), [prop]: format_length_property(value) })

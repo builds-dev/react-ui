@@ -10,13 +10,5 @@ export const join_classnames = (...a) => {
 	}
 }
 
-export const padding_array_to_string = a => {
-	let x = a[0] + 'px'
-	for (let i = 1; i < a.length; ++i) { x = x + ' ' + a[i] + 'px' }
-	return x
-}
-
-export const padding_to_css = padding =>
-	Array.isArray(padding)
-		? padding_array_to_string(padding)
-		: padding + 'px'
+export const padding_to_css = ({ bottom = 0, left = 0, right = 0, top = 0 }) =>
+	top + 'px ' + right + 'px ' + bottom + 'px ' + left + 'px'

@@ -1,11 +1,11 @@
 import * as assert from 'uvu/assert'
 import React from 'react'
-import { Box, Column, Row, align, conform, shrink, fill, ratio, grow, mount_to_body } from '#ui'
+import { Box, Column, Row, align, minimum, maximum, conform, content, shrink, fill, ratio, grow, mount_to_body } from '#ui'
 import { act, rendered_px_equal } from '../../test/util.js'
 
 export default async () => {
 	let parent_width = 100
-	const content_width = 50
+	const child_width = 50
 
 	const { unmount, render } = await act(() =>
 		mount_to_body
@@ -25,11 +25,11 @@ export default async () => {
 								],
 								[
 									{ x: [ 1, 0 ] },
-									<Box class_name='on_left' height={grow} layout_y={align.center}>on left</Box>
+									<Box class_name='on_left' height={grow} width={content} layout_y={align.center}>on left</Box>
 								],
 								[
 									{ x: [ 0, 1 ] },
-									<Box class_name='on_right' height={ratio(1)} layout_y={align.center}>on right</Box>
+									<Box class_name='on_right' height={ratio(1)} width={conform} layout_y={align.center}>on right</Box>
 								]
 							]}
 						>
@@ -38,10 +38,7 @@ export default async () => {
 								<Box bind:ref={in_back} height={fill} width={fill} center_y padding={10}>back</Box>
 							</In_back>
 							*/}
-							<Box class_name='content' height={100} width={100} layout_x={align.center} layout_y={align.center} padding={20}>
-								<Row width={grow} style={{ background: 'red' }}>
-									<Box width={shrink} style={{ background: 'lightblue' }}>foo bar</Box>
-								</Row>
+							<Box class_name='child' height={100} width={100} layout_x={align.center} layout_y={align.center} padding={20}>
 								{/*
 								<Image
 									opacity={1}
@@ -67,7 +64,7 @@ export default async () => {
 	act(render)
 
 	const assert_relatives_correctly_positioned = () => {
-		const content_rect = content.getBoundingClientRect()
+		const child_rect = child.getBoundingClientRect()
 		// const in_back_rect = in_back.getBoundingClientRect()
 		// const in_front_rect = in_front.getBoundingClientRect()
 		const above_rect = above.getBoundingClientRect()
@@ -76,37 +73,37 @@ export default async () => {
 		const on_right_rect = on_right.getBoundingClientRect()
 
 		assert.ok(
-			rendered_px_equal (above_rect.bottom) (content_rect.top),
-			'bottom of above area is the top of the regular content area'
+			rendered_px_equal (above_rect.bottom) (child_rect.top),
+			'bottom of above area is the top of the regular child area'
 		)
 		assert.equal(
 			below_rect.top,
-			content_rect.bottom,
-			'top of bottom area is the bottom of the regular content area'
+			child_rect.bottom,
+			'top of bottom area is the bottom of the regular child area'
 		)
 		assert.ok(
-			rendered_px_equal (on_left_rect.right) (content_rect.left),
-			'right of left area is the left of the regular content area'
+			rendered_px_equal (on_left_rect.right) (child_rect.left),
+			'right of left area is the left of the regular child area'
 		)
 		assert.equal(
 			on_right_rect.left,
-			content_rect.right,
-			'left of right area is the right of the regular content area'
+			child_rect.right,
+			'left of right area is the right of the regular child area'
 		)
 		// assert.equal(
 		// 	in_back_rect,
-		// 	content_rect,
-		// 	'in_back is in the same area as regular content'
+		// 	child_rect,
+		// 	'in_back is in the same area as regular child'
 		// )
 		// assert.equal(
 		// 	in_front_rect,
-		// 	content_rect,
-		// 	'in_front is in the same area as regular content'
+		// 	child_rect,
+		// 	'in_front is in the same area as regular child'
 		// )
 	}
 
 
-	const content = document.querySelector('.content')
+	const child = document.querySelector('.child')
 	const above = document.querySelector('.above')
 	const below = document.querySelector('.below')
 	const on_left = document.querySelector('.on_left')

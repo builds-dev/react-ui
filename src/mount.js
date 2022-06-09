@@ -1,9 +1,9 @@
 import React from 'react'
-import { css } from '@linaria/core'
-import { layout_y_child_style } from './layout.js'
 import * as ReactDOM from 'react-dom/client'
-import { Layout_context } from './Layout_context.js'
-import { grow } from './length.js'
+import { css } from '@linaria/core'
+import { Box_child_style_context } from './Box_child_style_context.js'
+import { compute_style_for_layout_y_child } from './layout.js'
+import { fill } from './length.js'
 
 const container_css = `
 	display: flex;
@@ -13,6 +13,7 @@ const container_css = `
 	justify-content: flex-start;
 `
 
+// TODO: body { min-height: 100vh; } with no explicit html height may be better
 const html_css = `
 	height: 100%;
 `
@@ -51,12 +52,12 @@ export const mount_to_body = props => App => {
 	}
 	let resolve
 	const create_app = props => React.createElement(
-		Layout_context.Provider,
-		{ value: { layout_child_style: child_props => layout_y_child_style ({ ...props, width: grow, height: grow }, child_props) } },
+		Box_child_style_context.Provider,
+		{
+			value: child_props => compute_style_for_layout_y_child({ width: fill, height: fill }, child_props)
+		},
 		React.createElement(App, props)
 	)
-	// checkPropTypes(prop_types, app.props, 'prop', App.name)
-	// const app_ui = layout_child(layout_y_child_style, props, app.props.children[0])
 	root_element.classList.add(body_root_element)
 	const uninject_body_style = inject_style(`body { ${body_css} }`)
 	const uninject_html_style = inject_style(`html { ${html_css} }`)

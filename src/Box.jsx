@@ -1,12 +1,17 @@
 import React from 'react'
-import { box, layout_y_style, layout_y_child_style } from './layout.js'
-import { Layout_parent } from './Layout_parent.jsx'
+import { box, compute_style_for_layout_y_parent, compute_style_for_layout_y_child } from './layout.js'
+import { Layout_box } from './Layout_box.jsx'
 
-// TODO: use propTypes to limit to one child
+/*
+	TODO: limit to one child: {React.Children.only(props.children)}
+	Multiple words of text count as multiple children, so text cannot be direct children if this is in place.
+*/
 export const Box = props =>
-	<Layout_parent
+	<Layout_box
+		layout_class_name={box}
+		compute_style_as_layout_parent={compute_style_for_layout_y_parent}
+		compute_style_for_layout_child={compute_style_for_layout_y_child}
 		{...props}
-		layout_class={box}
-		layout_child_style={layout_y_child_style}
-		layout_style={layout_y_style}
-	/>
+	>
+		{props.children}
+	</Layout_box>
