@@ -1,6 +1,6 @@
 import * as assert from 'uvu/assert'
 import React from 'react'
-import { Box, Column, Row, align, minimum, maximum, conform, content, shrink, fill, ratio, grow, mount_to_body } from '#ui'
+import { Box, Column, Row, align, content, fill, ratio, grow, mount_to_body } from '#ui'
 import { act, rendered_px_equal } from '../../test/util.js'
 
 export default async () => {
@@ -29,7 +29,7 @@ export default async () => {
 								],
 								[
 									{ x: [ 0, 1 ] },
-									<Box class_name='on_right' height={ratio(1)} width={conform} layout_y={align.center}>on right</Box>
+									<Box class_name='on_right' height={ratio(1)} width={content} layout_y={align.center}>on right</Box>
 								]
 							]}
 						>

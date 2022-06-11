@@ -1,6 +1,6 @@
 import * as assert from 'uvu/assert'
 import React from 'react'
-import { align, overflow, Box, Column, Row, fill, ratio, conform, grow, shrink, mount_to_body } from '#ui'
+import { align, content, overflow, Box, Column, Row, fill, ratio, grow, mount_to_body } from '#ui'
 import { act, rendered_px_equal } from '../../test/util.js'
 
 export default async () => {
@@ -15,9 +15,9 @@ export default async () => {
 			(() => {
 				return (
 					<Row class_name='x' width={200} height={50} style={{ border: '4px solid orange' }} overflow={overflow.visible}>
-						<Box class_name='a' width={shrink} height={grow} style={{ border: '4px solid lightblue', ...style }}>foo bar</Box>
+						<Box class_name='a' width={content} height={grow} style={{ border: '4px solid lightblue', ...style }}>foo bar</Box>
 						<Box class_name='b' width={ratio(0.5)} height={grow} style={{ border: '4px solid lightgreen', ...style }}>foo bar</Box>
-						<Box class_name='c' width={conform} height={grow} style={{ border: '4px solid lightgreen', ...style }}>foo bar</Box>
+						<Box class_name='c' width={content} height={grow} style={{ border: '4px solid lightgreen', ...style }}>foo bar</Box>
 						<Box class_name='d' width={fill} height={fill} style={{ border: '4px solid blue', ...style }}>foo bar baz</Box>
 					</Row>
 				)
