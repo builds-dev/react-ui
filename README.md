@@ -10,7 +10,7 @@ Inspired by [elm-ui](https://github.com/mdgriffith/elm-ui).
 
 #### `mount_to_body (options) (layout_box)`
 
-Mounts a [layout box](#layout_boxes) to the dom body.
+Mounts a [layout box](#layout-boxes) to the dom body.
 
 Options are not implemented yet, so pass an empty object.
 
