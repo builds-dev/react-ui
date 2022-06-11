@@ -8,7 +8,11 @@ Inspired by [elm-ui](https://github.com/mdgriffith/elm-ui).
 
 ### mount
 
-#### `mount_to_body`
+#### `mount_to_body (options) (layout_box)`
+
+Mounts a [layout box](#layout_boxes) to the dom body.
+
+Options are not implemented yet, so pass an empty object.
 
 ### Layout boxes
 
@@ -32,21 +36,29 @@ Layout boxes are 2d boxes that may contain text or other layout boxes.
 
 Apply `[class](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/class)` attribute to the underlying dom node.
 
-##### `height={[length](#length)}`
+##### `height={length}`
 
-`default: content`
+default: `content`
 
-##### `width={[length](#length)}`
+See [length](#length).
 
-`default: content`
+##### `width={length}`
 
-##### `layout_x={[layout](#layout)}`
+default: `content`
 
-`default: align.start`
+See [length](#length).
 
-##### `layout_y={[layout](#layout)}`
+##### `layout_x={layout}`
 
-`default: align.start`
+See [layout](#layout).
+
+default: `align.start`
+
+##### `layout_y={layout}`
+
+See [layout](#layout).
+
+default: `align.start`
 
 ##### `padding={{ bottom = 0, left = 0, right = 0, top = 0 }}`
 
@@ -116,9 +128,11 @@ import { Box, plane } from '#ui'
 
 `offset_y` arbitrarily moves a box along the x axis by the given number of pixels. The layout the box is within is unaffected; it is as though the box is in its original position.
 
-##### `overflow={[overflow](#overflow)}`
+##### `overflow={overflow}`
 
-`default: overflow.visible`
+See [overflow](#overflow).
+
+default: `overflow.visible`
 
 Configures the handling of overflow, which is when a box's content exceeds its bounds.
 
@@ -128,7 +142,7 @@ Apply inline styles to the underlying dom node. See [React's style prop](https:/
 
 ##### `tag={string}`
 
-`default: 'div'`
+default: `'div'`
 
 The [tag name](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) to use to create the underlying dom node.
 
