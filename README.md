@@ -1,6 +1,6 @@
 # builds React UI
 
-This is a library of React components that abstract over HTML and CSS, for building UIs from high-level, simple expressions.
+A library of React components that abstract over HTML and CSS, for building UIs from high-level, simple expressions.
 
 Inspired by [elm-ui](https://github.com/mdgriffith/elm-ui).
 
