@@ -34,7 +34,7 @@ Layout boxes are 2d boxes that may contain text or other layout boxes.
 
 ##### `class_name={string}`
 
-Apply `[class](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/class)` attribute to the underlying dom node.
+Apply [class](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/class) attribute to the underlying dom node.
 
 ##### `height={length}`
 
@@ -88,11 +88,13 @@ Relatives are positioned and sized relative to the box they are attached to (ori
 
 `relative` is `[ position, box ]`.
 
-`position` is `{ x: anchor, y: anchor, z: [plane](#plane) }`. It expresses a relative position in 3d space.
+`position` is `{ x: anchor, y: anchor, z: plane }`. It expresses a relative position in 3d space.
 
 `anchor` is `[ number, number ]`. The first number represents a point on the relative box, and the second number represents a point on the origin box. `0` refers to the start of the box along the axis, and `1` refers to the end of the box along the axis. `{ x: [ 0.5, 1 ] }` means to position the center (0.5) of the relative box on the right (1) of the origin box.
 
 The default `position` is `{ x: [ 0, 0 ], y: [ 0, 0 ], z: plane.foreground }`.
+
+See [plane](#plane).
 
 ```jsx
 import { Box, plane } from '#ui'
