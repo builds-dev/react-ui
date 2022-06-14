@@ -9,6 +9,9 @@
   "imports": {
     "#ui": "./src/index.js"
   },
+  "files": [
+    "./dist/"
+  ],
   "scripts": {
     "build": "rm -rf dist/*; rollup -c",
     "debug": "f () { export RUN=debug; export GLOB=\"$1\"; rollup -w -c rollup.tests.config.js; }; f",
