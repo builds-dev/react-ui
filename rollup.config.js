@@ -20,6 +20,7 @@ const plugins = [
 		plugins: []
 	}),
 	babel({
+		babelrc: false,
 		babelHelpers: 'runtime',
 		sourceMaps: false,
 		compact: false,

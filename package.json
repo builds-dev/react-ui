@@ -16,8 +16,25 @@
     "test": "f () { export RUN=test; export GLOB=\"$1\"; rollup -c rollup.tests.config.js; }; f",
     "test:watch": "f () { export RUN=test; export GLOB=\"$1\"; rollup -w -c rollup.tests.config.js; }; f"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "react",
+    "layout",
+    "components",
+    "box",
+    "row",
+    "column",
+    "align",
+    "position",
+    "css"
+  ],
+  "author": {
+    "name": "Johnny Hauser",
+    "email": "johnnyhauser@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builds-dev/react-ui"
+  },
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.17.10",

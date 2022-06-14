@@ -59,10 +59,11 @@ export default {
 			plugins: []
 		}),
 		babel({
+			babelrc: false,
 			babelHelpers: 'bundled',
 			sourceMaps: 'inline',
 			compact: false,
-			...babel_config
+			presets: babel_config.presets
 		}),
 		...(
 			process.env.RUN === 'debug' && process.env.ROLLUP_WATCH
