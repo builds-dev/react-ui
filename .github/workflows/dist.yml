@@ -29,6 +29,6 @@ jobs:
           git tag -a "$TAG" -m "$TAG"
       - run: git push --follow-tags
       - uses: JS-DevTools/npm-publish@v1
-        access: public
         with:
+          access: public
           token: ${{ secrets.NPM_ACCESS_TOKEN }}
