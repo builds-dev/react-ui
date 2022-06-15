@@ -146,7 +146,7 @@ export const compute_style_for_layout_parent = (
 })
 
 export const compute_style_for_layout_x_parent = props => compute_style_for_layout_parent(
-	'rowGap',
+	'columnGap',
 	props.layout_x,
 	props.layout_y,
 	props.height,
@@ -155,7 +155,7 @@ export const compute_style_for_layout_x_parent = props => compute_style_for_layo
 )
 
 export const compute_style_for_layout_y_parent = props => compute_style_for_layout_parent(
-	'columnGap',
+	'rowGap',
 	props.layout_y,
 	props.layout_x,
 	props.height,
