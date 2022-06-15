@@ -306,8 +306,8 @@ const compute_style_for_layout_parent = (gapProperty, main_axis_layout = start, 
   [gapProperty]: main_axis_layout.gap && main_axis_layout.gap + 'px',
   ...overflow
 });
-const compute_style_for_layout_x_parent = props => compute_style_for_layout_parent('rowGap', props.layout_x, props.layout_y, props.height, props.width, props.overflow);
-const compute_style_for_layout_y_parent = props => compute_style_for_layout_parent('columnGap', props.layout_y, props.layout_x, props.height, props.width, props.overflow);
+const compute_style_for_layout_x_parent = props => compute_style_for_layout_parent('columnGap', props.layout_x, props.layout_y, props.height, props.width, props.overflow);
+const compute_style_for_layout_y_parent = props => compute_style_for_layout_parent('rowGap', props.layout_y, props.layout_x, props.height, props.width, props.overflow);
 const box = "box_bb7yjy4";
 const column = "column_c1m6442m";
 const row = "row_r8o4g34";
