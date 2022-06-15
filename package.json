@@ -52,6 +52,7 @@
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
+    "@rollup/plugin-virtual": "^2.1.0",
     "browser-run": "^11.0.0",
     "glob-module-file": "^3.0.2",
     "path-browserify": "^1.0.1",
@@ -67,11 +68,10 @@
     "uvu": "^0.5.3"
   },
   "dependencies": {
-    "@babel/runtime": "^7.18.3",
-    "prop-types": "^15.8.1"
+    "@babel/runtime": "^7.18.3"
   },
   "peerDependencies": {
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react": "18.x",
+    "react-dom": "18.x"
   }
 }

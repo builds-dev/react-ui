@@ -9,8 +9,9 @@ import glob_module_files from 'glob-module-file'
 import linaria from '@linaria/rollup'
 import babel_config from './.babelrc.json'
 import postcss from 'rollup-plugin-postcss'
+import virtual from '@rollup/plugin-virtual'
 
-export default {
+export default async () => ({
 	input: 'test/test.js',
 	output: {
 		file: 'build/app.js',
@@ -18,26 +19,13 @@ export default {
 		sourcemap: true
 	},
 	plugins: [
-		{
-			// resolveId: source =>
-			// 	source === '../build/test-components.js'
-			// 		? { id: 'build/test-components.js' }
-			// 		: null
-			// ,
-			load: async id => {
-				// return id === 'build/test-components.js'
-				return id.includes('build/test-components.js')
-					? {
-						code: await glob_module_files({
-							pattern: process.env.GLOB || './{src,test,tests}/**/*.{spec,test}.jsx',
-							format: 'es',
-							pathPrefix: '../',
-							exportWithPath: true
-						})
-					}
-					: null
-			}
-		},
+		virtual({
+			'./build/test-components.js': await glob_module_files({
+				pattern: process.env.GLOB || './{src,test,tests}/**/*.{spec,test}.jsx',
+				format: 'es',
+				exportWithPath: true
+			})
+		}),
 		nodeResolve({
 			browser: true,
 			preferBuiltins: false
@@ -86,4 +74,4 @@ export default {
 				}
 			}
 	]
-}
+})

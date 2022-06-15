@@ -32,11 +32,16 @@ Object.entries(suites)
 				return tests.reduce(
 					(previous_test_promise, { test_name, test_f }) =>
 						previous_test_promise.then(() => {
-							return new Promise(resolve => {
+							return new Promise((resolve, reject) => {
 								test(`${suite_name}: ${test_name}`, async () => {
-									const unmount = await Promise.resolve(test_f())
-									keep_alive || await act(unmount)
-									resolve()
+									try {
+										const unmount = await Promise.resolve(test_f())
+										keep_alive || await act(unmount)
+										resolve()
+									} catch (error) {
+										reject(error)
+										throw error
+									}
 								})
 								return test.run()
 							})
