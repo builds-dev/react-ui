@@ -447,7 +447,7 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 
-var css_248z = ".body_b1yx4jx3 {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmargin: 0; \tmin-height: 100%; \tpadding: 0;}\n\n.body_root_element_b1dynhyx {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 0 auto; \twidth: 100%;}\n\n";
+var css_248z = ".body_b1yx4jx3 {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmargin: 0; \tmin-height: 100vh; \tpadding: 0;}\n\n.body_root_element_b1dynhyx {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 0 auto; \twidth: 100%;}\n\n";
 styleInject(css_248z);
 
 const container_css = `
@@ -456,15 +456,11 @@ const container_css = `
 	flex-wrap: nowrap;
 	align-items: flex-start;
 	justify-content: flex-start;
-`; // TODO: body { min-height: 100vh; } with no explicit html height may be better
-
-const html_css = `
-	height: 100%;
 `;
 const body_css = `
 	${container_css}
 	margin: 0;
-	min-height: 100%;
+	min-height: 100vh;
 	padding: 0;
 `;
 const body = "body_b1yx4jx3";
@@ -485,7 +481,6 @@ const mount_to_body = props => App => {
     root.unmount();
     root_element.remove();
     uninject_body_style();
-    uninject_html_style();
   };
 
   const create_app = props => /*#__PURE__*/React__default["default"].createElement(Box_child_style_context.Provider, {
@@ -497,7 +492,6 @@ const mount_to_body = props => App => {
 
   root_element.classList.add(body_root_element);
   const uninject_body_style = inject_style(`body { ${body_css} }`);
-  const uninject_html_style = inject_style(`html { ${html_css} }`);
   document.body.append(root_element);
   return {
     unmount,
