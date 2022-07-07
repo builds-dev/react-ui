@@ -13,15 +13,10 @@ const container_css = `
 	justify-content: flex-start;
 `
 
-// TODO: body { min-height: 100vh; } with no explicit html height may be better
-const html_css = `
-	height: 100%;
-`
-
 const body_css = `
 	${container_css}
 	margin: 0;
-	min-height: 100%;
+	min-height: 100vh;
 	padding: 0;
 `
 
@@ -48,7 +43,6 @@ export const mount_to_body = props => App => {
 		root.unmount()
 		root_element.remove()
 		uninject_body_style()
-		uninject_html_style()
 	}
 	let resolve
 	const create_app = props => React.createElement(
@@ -60,7 +54,6 @@ export const mount_to_body = props => App => {
 	)
 	root_element.classList.add(body_root_element)
 	const uninject_body_style = inject_style(`body { ${body_css} }`)
-	const uninject_html_style = inject_style(`html { ${html_css} }`)
 	document.body.append(root_element)
 	return {
 		unmount,
