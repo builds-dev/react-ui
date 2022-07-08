@@ -447,20 +447,20 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 
-var css_248z = ".body_b1yx4jx3 {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmargin: 0; \tmin-height: 100vh; \tpadding: 0;}\n\n.body_root_element_b1dynhyx {display: flex; \tflex-direction: column; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 0 auto; \twidth: 100%;}\n\n";
+var css_248z = ".body_b1yx4jx3 {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmin-height: 100vh; \tmargin: 0; \tpadding: 0;}\n\n.body_root_element_b1dynhyx {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 1 100%; \talign-self: stretch;}\n\n";
 styleInject(css_248z);
 
 const container_css = `
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	flex-wrap: nowrap;
 	align-items: flex-start;
 	justify-content: flex-start;
 `;
 const body_css = `
 	${container_css}
-	margin: 0;
 	min-height: 100vh;
+	margin: 0;
 	padding: 0;
 `;
 const body = "body_b1yx4jx3";
@@ -484,7 +484,7 @@ const mount_to_body = props => App => {
   };
 
   const create_app = props => /*#__PURE__*/React__default["default"].createElement(Box_child_style_context.Provider, {
-    value: child_props => compute_style_for_layout_y_child({
+    value: child_props => compute_style_for_layout_x_child({
       width: fill,
       height: fill
     }, child_props)
