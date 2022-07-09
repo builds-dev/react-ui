@@ -258,7 +258,9 @@ const compute_style_for_main_axis_length = (max_length_name, min_length_name, pa
     };
   } else {
     return {
-      flex: '0 0 ' + compute_layout_length(parent_length, length)
+      // to use flex-basis to set exact length, the min length must be set to 0
+      flex: '0 0 ' + compute_layout_length(parent_length, length),
+      [min_length_name]: 0
     };
   }
 };
