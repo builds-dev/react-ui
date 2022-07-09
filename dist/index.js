@@ -393,20 +393,22 @@ const Layout_box = /*#__PURE__*/React.forwardRef((_props, ref) => {
   const props = format_props(_props);
   const {
     class_name,
+    element_props,
     layout_class_name,
     compute_style_as_layout_parent,
     compute_style_for_layout_child,
     tag: Tag
   } = props;
-  return /*#__PURE__*/React__default["default"].createElement(Box_child_style_context.Consumer, null, compute_style_as_layout_box_child => /*#__PURE__*/React__default["default"].createElement(Tag, {
-    className: join_classnames(props.layout_class_name, props.class_name),
+  return /*#__PURE__*/React__default["default"].createElement(Box_child_style_context.Consumer, null, compute_style_as_layout_box_child => /*#__PURE__*/React__default["default"].createElement(Tag, _extends__default["default"]({
+    className: join_classnames(props.layout_class_name, props.class_name)
+  }, element_props, {
     ref: ref,
     style: { ...compute_style_as_layout_parent(props),
       ...compute_style_as_layout_box_child(props),
       ...compute_style_as_layout_box(props),
       ...props.style
     }
-  }, props.relatives && props.relatives.length > 0 ? layout_children_and_relatives(compute_style_for_layout_child, props) : layout_children(compute_style_for_layout_child, props)));
+  }), props.relatives && props.relatives.length > 0 ? layout_children_and_relatives(compute_style_for_layout_child, props) : layout_children(compute_style_for_layout_child, props)));
 });
 
 /*
@@ -414,11 +416,14 @@ const Layout_box = /*#__PURE__*/React.forwardRef((_props, ref) => {
 	Multiple words of text count as multiple children, so text cannot be direct children if this is in place.
 */
 
-const Box = props => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+const Box = ({
+  children,
+  ...props
+}) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
   layout_class_name: box,
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   compute_style_for_layout_child: compute_style_for_layout_y_child
-}, props), props.children);
+}, props), children);
 
 const Column = props => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
   layout_class_name: column,
