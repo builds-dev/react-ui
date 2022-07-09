@@ -74,6 +74,7 @@ export const Layout_box = forwardRef((_props, ref) => {
 	const props = format_props(_props)
 	const {
 		class_name,
+		element_props,
 		layout_class_name,
 		compute_style_as_layout_parent,
 		compute_style_for_layout_child,
@@ -84,6 +85,7 @@ export const Layout_box = forwardRef((_props, ref) => {
 			{compute_style_as_layout_box_child => (
 				<Tag
 					className={join_classnames(props.layout_class_name, props.class_name)}
+					{...element_props}
 					ref={ref}
 					style={{
 						...compute_style_as_layout_parent(props),

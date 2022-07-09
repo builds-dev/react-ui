@@ -2,6 +2,7 @@
 
 build/*
 !build/.keep
+!build/index.html
 
 dist/*
 !dist/.keep
