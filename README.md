@@ -36,6 +36,14 @@ Layout boxes are 2d boxes that may contain text or other layout boxes.
 
 Apply [class](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/class) attribute to the underlying dom node.
 
+##### `element_props={object}`
+
+Pass props to the underlying React element. This prop is a temporary approach to accessing some behavior not yet available through this library's API.
+
+```js
+<Box element_props={{ onClick: handle_the_click }}></Box>
+```
+
 ##### `height={length}`
 
 default: `content`
@@ -147,6 +155,54 @@ Apply inline styles to the underlying dom node. See [React's style prop](https:/
 default: `'div'`
 
 The [tag name](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) to use to create the underlying dom node.
+
+#### edges
+
+##### `edges (number)`
+
+Shorthand for `{ bottom: number, left: number, right: number, top: number }`.
+
+##### `edges.x (number)`
+
+Shorthand for `{ left: number, right: number }`.
+
+##### `edges.y (number)`
+
+Shorthand for `{ bottom: number, top: number }`.
+
+#### layout
+
+`gap` is a number of pixels of space on the layout axis between layout children.
+
+##### `align.start`, `align.start ({ gap: number })`
+
+Layout children from the start of the layout axis (top edge of column, left edge of row).
+
+`align.start` is shorthand for `align.start ({ gap: 0 })`.
+
+##### `align.center`, `align.start ({ gap: number })`
+
+Layout children from the center of the layout axis (children or centered on the axis).
+
+`align.center` is shorthand for `align.center ({ gap: 0 })`.
+
+##### `align.end`, `align.end ({ gap: number })`
+
+Layout children from the end of the layout axis (botton edge of column, right edge of row).
+
+`align.end` is shorthand for `align.end ({ gap: 0 })`.
+
+##### `align.space_around`
+
+Distribute equal space on each side of layout children.
+
+##### `align.space_between`
+
+Distribute equal space between layout children.
+
+##### `align.space_evenly`
+
+Distribute equal space around layout children.
 
 #### length
 
