@@ -274,15 +274,15 @@ Hide overflow on the `x` axis.
 
 Hide overflow on the `y` axis.
 
-##### `scroll ({ overscroll = { x = overscroll_default, y = overscroll_default } })`
+##### `overflow.scroll ({ overscroll = { x = overscroll_default, y = overscroll_default } })`
 
 All overflow is scrollable.
 
-##### `scroll_x ({ overscroll = overscroll_default })`
+##### `overflow.scroll_x ({ overscroll = overscroll_default })`
 
 Overflow on the `x` axis is scrollable. Overflow on the `y` axis is hidden.
 
-##### `scroll_y ({ overscroll = overscroll_default })`
+##### `overflow.scroll_y ({ overscroll = overscroll_default })`
 
 Overflow on the `y` axis is scrollable. Overflow on the `x` axis is hidden.
 
