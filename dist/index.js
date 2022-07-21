@@ -47,22 +47,6 @@ var align = /*#__PURE__*/Object.freeze({
 	space_evenly: space_evenly
 });
 
-const edges = Object.assign(n => ({
-  top: n,
-  bottom: n,
-  left: n,
-  right: n
-}), {
-  x: n => ({
-    left: n,
-    right: n
-  }),
-  y: n => ({
-    top: n,
-    bottom: n
-  })
-});
-
 const css_infinity = 100000000;
 
 const convert_value = x => x === Infinity ? css_infinity : x;
@@ -314,9 +298,18 @@ const box = "box_bb7yjy4";
 const column = "column_c1m6442m";
 const row = "row_r8o4g34";
 
+const ascended = 'ascended';
 const ascended_background = 'ascended_background';
 const background = 'background';
 const foreground = 'foreground';
+
+var plane = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	ascended: ascended,
+	ascended_background: ascended_background,
+	background: background,
+	foreground: foreground
+});
 
 const Box_child_style_context = /*#__PURE__*/React.createContext();
 
@@ -432,6 +425,22 @@ const Column = props => /*#__PURE__*/React__default["default"].createElement(Lay
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   compute_style_for_layout_child: compute_style_for_layout_y_child
 }, props));
+
+const edges = Object.assign(n => ({
+  top: n,
+  bottom: n,
+  left: n,
+  right: n
+}), {
+  x: n => ({
+    left: n,
+    right: n
+  }),
+  y: n => ({
+    top: n,
+    bottom: n
+  })
+});
 
 var createRoot;
 
@@ -595,6 +604,7 @@ exports.max = max;
 exports.min = min;
 exports.mount_to_body = mount_to_body;
 exports.overflow = overflow;
+exports.plane = plane;
 exports.px = px;
 exports.ratio = ratio;
 exports.to_css_value = to_css_value;
