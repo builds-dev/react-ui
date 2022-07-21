@@ -411,20 +411,22 @@ const Layout_box = /*#__PURE__*/React.forwardRef((_props, ref) => {
 	Multiple words of text count as multiple children, so text cannot be direct children if this is in place.
 */
 
-const Box = ({
+const Box = /*#__PURE__*/React.forwardRef(({
   children,
   ...props
-}) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+}, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+  ref: ref,
   layout_class_name: box,
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   compute_style_for_layout_child: compute_style_for_layout_y_child
-}, props), children);
+}, props), children));
 
-const Column = props => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+const Column = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+  ref: ref,
   layout_class_name: column,
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   compute_style_for_layout_child: compute_style_for_layout_y_child
-}, props));
+}, props)));
 
 const edges = Object.assign(n => ({
   top: n,
@@ -583,11 +585,12 @@ var overflow = /*#__PURE__*/Object.freeze({
 	visible: visible
 });
 
-const Row = props => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+const Row = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+  ref: ref,
   layout_class_name: row,
   compute_style_as_layout_parent: compute_style_for_layout_x_parent,
   compute_style_for_layout_child: compute_style_for_layout_x_child
-}, props));
+}, props)));
 
 exports.Box = Box;
 exports.Column = Column;
