@@ -67,6 +67,7 @@ const format_props = props => ({
 	...props,
 	height: props.height == undefined ? content : format_length (props.height),
 	width: props.width == undefined ? content : format_length (props.width),
+	relatives: props.relatives || [],
 	tag: props.tag || 'div'
 })
 
@@ -94,10 +95,7 @@ export const Layout_box = forwardRef((_props, ref) => {
 						...props.style
 					}}
 				>
-					{props.relatives && props.relatives.length > 0
-						? layout_children_and_relatives(compute_style_for_layout_child, props)
-						: layout_children(compute_style_for_layout_child, props)
-					}
+					{layout_children_and_relatives(compute_style_for_layout_child, props)}
 				</Tag>
 			)}
 		</Box_child_style_context.Consumer>
