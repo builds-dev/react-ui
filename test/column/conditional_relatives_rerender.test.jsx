@@ -12,7 +12,7 @@ export default async () => {
 				<Box
 					class_name='parent'
 					style={{ border: "4px solid orange" }}
-					relatives={
+					foreground={
 						show_relatives
 							?
 								[
