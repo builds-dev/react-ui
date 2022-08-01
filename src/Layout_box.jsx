@@ -1,14 +1,18 @@
 import React, { createElement, useContext, useMemo } from 'react'
 import { forwardRef } from 'react'
-// import { Layout_child } from './Layout_child.jsx'
 import { join_classnames } from './lib.js'
-import * as plane from './plane.js'
 import { content, format_length, to_css_value } from './length.js'
-import { Box_child_style_context } from './Box_child_style_context.js'
+import {
+	Box_child_height_style_context,
+	Box_child_position_style_context,
+	Box_child_width_style_context
+} from './Box_child_style_context.js'
 import {
 	compute_contain,
-	compute_style_as_layout_box,
-	compute_style_for_relative_child
+	compute_position_style_for_layout_child,
+	compute_height_style_for_relative_child,
+	compute_width_style_for_relative_child,
+	compute_position_style_for_relative_child
 } from './layout.js'
 import * as align from './align.js'
 import { padding_to_css } from './lib.js'
@@ -16,28 +20,22 @@ import { padding_to_css } from './lib.js'
 const map = f => x => useMemo(() => f(x), [ x ])
 const map_all = f => (...x) => useMemo(() => f(...x), x)
 
-const Relative_child = ({ child, position }) => (
-	<Box_child_style_context.Provider value={child_props => compute_style_for_relative_child(child_props, position)}>
-		{child}
-	</Box_child_style_context.Provider>
-)
-
 const Distant_relative_child = ({ props, child, position }) => (
 	<Box_child_style_context.Provider value={child_props => compute_style_for_distant_relative_child(props, child_props, position)}>
 		{child}
 	</Box_child_style_context.Provider>
 )
 
-const relative_position_defaults = { x: [ 0, 0 ], y: [ 0, 0 ] }
-
 const prepare_relatives = relatives =>
 	relatives
 		?
-			relatives.map((relative, index) => {
-				const [ input_position, component ] = relative
-				const position = { ...relative_position_defaults, ...input_position }
-				return createElement(Relative_child, { child: component, position, key: component.key === null ? index : component.key })
-			})
+			<Box_child_height_style_context.Provider value={compute_height_style_for_relative_child}>
+				<Box_child_width_style_context.Provider value={compute_width_style_for_relative_child}>
+					<Box_child_position_style_context.Provider value={compute_position_style_for_relative_child}>
+						{relatives.map((x, index) => x.key === null ? React.cloneElement(x, { key: index }) : x)}
+					</Box_child_position_style_context.Provider>
+				</Box_child_width_style_context.Provider>
+			</Box_child_height_style_context.Provider>
 		:
 			null
 
@@ -61,9 +59,12 @@ const prepare_relatives = relatives =>
 	These props are passed in by Box, Column, and Row, and never change:
 		- layout_class_name
 		- compute_style_as_layout_parent
-		- compute_style_for_layout_child
+		- compute_height_style_for_layout_child
+		- compute_width_style_for_layout_child
 */
 
+const anchor_default = [ 0, 0 ]
+const prepare_anchor = x => x || anchor_default
 const prepare_layout = x => x || align.start
 const prepare_length = x => x == undefined ? content : format_length (x)
 const prepare_padding = x => x && padding_to_css (x)
@@ -71,11 +72,14 @@ const prepare_tag = x => x || 'div'
 
 export const Layout_box = forwardRef((
 	{
+		anchor_x: prop_anchor_x,
+		anchor_y: prop_anchor_y,
 		background: prop_background,
 		children,
 		class_name,
 		compute_style_as_layout_parent,
-		compute_style_for_layout_child,
+		compute_height_style_for_layout_child,
+		compute_width_style_for_layout_child,
 		element_props,
 		foreground: prop_foreground,
 		height: prop_height,
@@ -92,6 +96,8 @@ export const Layout_box = forwardRef((
 	},
 	ref
 ) => {
+	const anchor_x = map (prepare_anchor) (prop_anchor_x)
+	const anchor_y = map (prepare_anchor) (prop_anchor_y)
 	const height = map (prepare_length) (prop_height)
 	const layout_x = map (prepare_layout) (prop_layout_x)
 	const layout_y = map (prepare_layout) (prop_layout_y)
@@ -99,7 +105,9 @@ export const Layout_box = forwardRef((
 	const Tag = map (prepare_tag) (tag)
 	const width = map (prepare_length) (prop_width)
 
-	const compute_style_as_layout_box_child = useContext(Box_child_style_context)
+	const compute_height_style_as_layout_box_child = useContext(Box_child_height_style_context)
+	const compute_position_style_as_layout_box_child = useContext(Box_child_position_style_context)
+	const compute_width_style_as_layout_box_child = useContext(Box_child_width_style_context)
 
 	const className = map (x => join_classnames(layout_class_name, x)) (class_name)
 
@@ -114,13 +122,16 @@ export const Layout_box = forwardRef((
 			layout_y
 		)
 
-	/* TODO: break up compute_style_as_layout_box_child into two functions
-		One will depend on: compute_style_as_layout_box_child, height, width
-		the other will depend on offset_x, offset_y
-		`compute_style_as_layout_box_child` changes when the parent props change, so be sure to include it as a useMemo (map_all) dependency
-	*/
-	// TODO: useMemo and eliminate objects
-	const style_as_layout_box_child = compute_style_as_layout_box_child ({ height, width, offset_x, offset_y })
+	const height_style_as_layout_box_child = map (compute_height_style_as_layout_box_child) (height)
+	const position_style_as_layout_box_child = map_all
+		(compute_position_style_as_layout_box_child)
+		(
+			anchor_x,
+			anchor_y,
+			offset_x,
+			offset_y
+		)
+	const width_style_as_layout_box_child = map (compute_width_style_as_layout_box_child) (width)
 
 	const style = map_all
 		((
@@ -128,14 +139,18 @@ export const Layout_box = forwardRef((
 			overflow,
 			padding,
 			style_as_layout_parent,
-			style_as_layout_box_child,
+			height_style_as_layout_box_child,
+			position_style_as_layout_box_child,
+			width_style_as_layout_box_child,
 			prop_style
 		) => ({
 			contain,
 			padding,
 			...overflow,
 			...style_as_layout_parent,
-			...style_as_layout_box_child,
+			...height_style_as_layout_box_child,
+			...position_style_as_layout_box_child,
+			...width_style_as_layout_box_child,
 			...prop_style
 		}))
 		(
@@ -143,23 +158,19 @@ export const Layout_box = forwardRef((
 			overflow,
 			padding,
 			style_as_layout_parent,
-			style_as_layout_box_child,
+			height_style_as_layout_box_child,
+			position_style_as_layout_box_child,
+			width_style_as_layout_box_child,
 			prop_style
 		)
 
-	const box_child_style_context_value = map_all
-		(
-			(
-				height,
-				width
-			) =>
-				// TODO: These object parameters can be eliminated for performance.
-				child_props => compute_style_for_layout_child({ height , width }, child_props)
-		)
-		(
-			height,
-			width
-		)
+	const box_child_height_style_context_value = map
+		(compute_height_style_for_layout_child)
+		(height)
+
+	const box_child_width_style_context_value = map
+		(compute_width_style_for_layout_child)
+		(width)
 
 	const background = map (prepare_relatives) (prop_background)
 	const foreground = map (prepare_relatives) (prop_foreground)
@@ -172,9 +183,13 @@ export const Layout_box = forwardRef((
 			style={style}
 		>
 			{background}
-			<Box_child_style_context.Provider value={box_child_style_context_value}>
-				{children}
-			</Box_child_style_context.Provider>
+			<Box_child_height_style_context.Provider value={box_child_height_style_context_value}>
+				<Box_child_width_style_context.Provider value={box_child_width_style_context_value}>
+					<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
+						{children}
+					</Box_child_position_style_context.Provider>
+				</Box_child_width_style_context.Provider>
+			</Box_child_height_style_context.Provider>
 			{foreground}
 		</Tag>
 	)

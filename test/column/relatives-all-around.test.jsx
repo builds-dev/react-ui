@@ -16,32 +16,14 @@ export default async () => {
 						<Column
 							class_name='parent'
 							background={[
-								[
-									{},
-									<Box class_name='in_back' width={fill} layout_x={align.center}>in back</Box>
-								],
+								<Box class_name='in_back' width={fill} layout_x={align.center}>in back</Box>
 							]}
 							foreground={[
-								[
-									{ y: [ 1, 0 ] },
-									<Box class_name='above' width={fill} layout_x={align.center}>above</Box>
-								],
-								[
-									{ y: [ 0, 1 ] },
-									<Box class_name='below' width={fill} layout_x={align.center}>below</Box>
-								],
-								[
-									{ x: [ 1, 0 ] },
-									<Box class_name='on_left' height={grow} width={content} layout_y={align.center}>on left</Box>
-								],
-								[
-									{ x: [ 0, 1 ] },
-									<Box class_name='on_right' height={ratio(1)} width={content} layout_y={align.center}>on right</Box>
-								],
-								[
-									{},
-									<Box class_name='in_front' height={fill} width={fill} layout_x={align.center} layout_y={align.end}>in front</Box>
-								]
+								<Box class_name='above' anchor_y={[ 1, 0 ]} width={fill} layout_x={align.center}>above</Box>,
+								<Box class_name='below' anchor_y={[ 0, 1 ]} width={fill} layout_x={align.center}>below</Box>,
+								<Box class_name='on_left' anchor_x={[ 1, 0 ]} anchor_y={[ 0.5, 0.5 ]}>on left</Box>,
+								<Box class_name='on_right' anchor_x={[ 0, 1 ]} anchor_y={[ 0.5, 0.5 ]}>on right</Box>,
+								<Box class_name='in_front' anchor_x={[ 0.5, 0.5 ]} anchor_y={[ 1, 1 ]}>in front</Box>
 							]}
 						>
 							<Box
@@ -100,8 +82,8 @@ export default async () => {
 			`top of 'in_back' is top of 'parent'`
 		)
 		assert.equal(
-			in_front_rect.top,
-			parent_rect.top,
+			in_front_rect.bottom,
+			parent_rect.bottom,
 			`bottom of 'in_front' is bottom of 'parent'`
 		)
 	}

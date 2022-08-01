@@ -16,10 +16,7 @@ export default async () => {
 						show_relatives
 							?
 								[
-									[
-										{ x: [ 0, 1 ], y: [ 0, 1 ] },
-										<Box class_name='relative' style={{ border: '4px solid red' }}>I am a relative</Box>
-									]
+									<Box class_name='relative' anchor_x={[ 0, 1 ]} anchor_y={[ 0, 1 ]} style={{ border: '4px solid red' }}>I am a relative</Box>
 								]
 							:
 								[]
