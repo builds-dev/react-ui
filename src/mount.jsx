@@ -12,6 +12,7 @@ import {
 	compute_width_style_for_layout_x_child
 } from './layout.js'
 import { fill } from './length.js'
+import { Stack } from './Stack.jsx'
 
 const container_css = `
 	display: flex;
@@ -54,13 +55,15 @@ export const mount_to_body = props => App => {
 	}
 	let resolve
 	const create_app = props => (
-		<Box_child_height_style_context.Provider value={compute_height_style_for_layout_x_child (fill)}>
-			<Box_child_width_style_context.Provider value={compute_width_style_for_layout_x_child (fill)}>
-				<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
-					<App {...props}/>
-				</Box_child_position_style_context.Provider>
-			</Box_child_width_style_context.Provider>
-		</Box_child_height_style_context.Provider>
+		<Stack>
+			<Box_child_height_style_context.Provider value={compute_height_style_for_layout_x_child (fill)}>
+				<Box_child_width_style_context.Provider value={compute_width_style_for_layout_x_child (fill)}>
+					<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
+						<App {...props}/>
+					</Box_child_position_style_context.Provider>
+				</Box_child_width_style_context.Provider>
+			</Box_child_height_style_context.Provider>
+		</Stack>
 	)
 	root_element.classList.add(body_root_element)
 	const uninject_body_style = inject_style(`body { ${body_css} }`)

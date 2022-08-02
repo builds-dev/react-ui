@@ -1,5 +1,5 @@
 import React, { createElement, useContext, useMemo } from 'react'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 import { join_classnames } from './lib.js'
 import { content, format_length, to_css_value } from './length.js'
 import {
@@ -16,15 +16,16 @@ import {
 } from './layout.js'
 import * as align from './align.js'
 import { padding_to_css } from './lib.js'
+import { Stack_context } from './Stack.jsx'
 
 const map = f => x => useMemo(() => f(x), [ x ])
 const map_all = f => (...x) => useMemo(() => f(...x), x)
 
-const Distant_relative_child = ({ props, child, position }) => (
-	<Box_child_style_context.Provider value={child_props => compute_style_for_distant_relative_child(props, child_props, position)}>
-		{child}
-	</Box_child_style_context.Provider>
-)
+// const Distant_relative_child = ({ props, child, position }) => (
+// 	<Box_child_style_context.Provider value={child_props => compute_style_for_distant_relative_child(props, child_props, position)}>
+// 		{child}
+// 	</Box_child_style_context.Provider>
+// )
 
 const prepare_relatives = relatives =>
 	relatives
@@ -72,6 +73,7 @@ const prepare_tag = x => x || 'div'
 
 export const Layout_box = forwardRef((
 	{
+		ascended,
 		anchor_x: prop_anchor_x,
 		anchor_y: prop_anchor_y,
 		background: prop_background,
@@ -80,6 +82,7 @@ export const Layout_box = forwardRef((
 		compute_style_as_layout_parent,
 		compute_height_style_for_layout_child,
 		compute_width_style_for_layout_child,
+		descended,
 		element_props,
 		foreground: prop_foreground,
 		height: prop_height,
@@ -132,6 +135,34 @@ export const Layout_box = forwardRef((
 			offset_y
 		)
 	const width_style_as_layout_box_child = map (compute_width_style_as_layout_box_child) (width)
+
+	const stack = useContext(Stack_context)
+	console.log({ stack })
+	const [ state ] = useState(() => ({}))
+
+	useEffect(
+		() => {
+			if (ascended && ascended.length && !state.stack) {
+				state.stack = stack.register(ref)
+			}
+			if (state.stack) {
+				state.stack.update_ascendants(ascended || [])
+			}
+		},
+		[ ascended ]
+	)
+
+	useEffect(
+		() => {
+			if (descended && descended.length && !state.stack) {
+				state.stack = stack.register(ref)
+			}
+			if (state.stack) {
+				state.stack.update_descendants(descended || [])
+			}
+		},
+		[ descended ]
+	)
 
 	const style = map_all
 		((
