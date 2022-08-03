@@ -1,4 +1,4 @@
-import React, { createElement, useContext, useMemo } from 'react'
+import React, { createElement, useContext, useImperativeHandle, useMemo, useRef } from 'react'
 import { forwardRef, useEffect, useState } from 'react'
 import { join_classnames } from './lib.js'
 import { content, format_length, to_css_value } from './length.js'
@@ -17,9 +17,10 @@ import {
 import * as align from './align.js'
 import { padding_to_css } from './lib.js'
 import { Stack_context } from './Stack.jsx'
+import { map, map_all } from './util/react.js'
 
-const map = f => x => useMemo(() => f(x), [ x ])
-const map_all = f => (...x) => useMemo(() => f(...x), x)
+const call = (f, x) => f(x)
+const call5 = (f, a, b, c, d, e) => f(a, b, c, d, e)
 
 // const Distant_relative_child = ({ props, child, position }) => (
 // 	<Box_child_style_context.Provider value={child_props => compute_style_for_distant_relative_child(props, child_props, position)}>
@@ -97,8 +98,12 @@ export const Layout_box = forwardRef((
 		tag,
 		width: prop_width,
 	},
-	ref
+	_ref
 ) => {
+	const ref = useRef()
+
+	useImperativeHandle(_ref, () => ref.current)
+
 	const anchor_x = map (prepare_anchor) (prop_anchor_x)
 	const anchor_y = map (prepare_anchor) (prop_anchor_y)
 	const height = map (prepare_length) (prop_height)
@@ -125,43 +130,62 @@ export const Layout_box = forwardRef((
 			layout_y
 		)
 
-	const height_style_as_layout_box_child = map (compute_height_style_as_layout_box_child) (height)
-	const position_style_as_layout_box_child = map_all
-		(compute_position_style_as_layout_box_child)
+	const height_style_as_layout_box_child = map_all
+		(call)
 		(
+			compute_height_style_as_layout_box_child,
+			height
+		)
+
+	const position_style_as_layout_box_child = map_all
+		(call5)
+		(
+			compute_position_style_as_layout_box_child,
 			anchor_x,
 			anchor_y,
 			offset_x,
-			offset_y
+			offset_y,
+			ref.current
 		)
-	const width_style_as_layout_box_child = map (compute_width_style_as_layout_box_child) (width)
+
+	const width_style_as_layout_box_child = map_all
+		(call)
+		(
+			compute_width_style_as_layout_box_child,
+			width
+		)
 
 	const stack = useContext(Stack_context)
-	console.log({ stack })
 	const [ state ] = useState(() => ({}))
 
 	useEffect(
 		() => {
+			if (!ref.current) {
+				return
+			}
 			if (ascended && ascended.length && !state.stack) {
-				state.stack = stack.register(ref)
+				state.stack = stack.register(ref.current)
 			}
 			if (state.stack) {
 				state.stack.update_ascendants(ascended || [])
 			}
 		},
-		[ ascended ]
+		[ ascended, ref.current ]
 	)
 
 	useEffect(
 		() => {
+			if (!ref.current) {
+				return
+			}
 			if (descended && descended.length && !state.stack) {
-				state.stack = stack.register(ref)
+				state.stack = stack.register(ref.current)
 			}
 			if (state.stack) {
 				state.stack.update_descendants(descended || [])
 			}
 		},
-		[ descended ]
+		[ descended, ref.current ]
 	)
 
 	const style = map_all

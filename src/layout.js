@@ -24,7 +24,10 @@ const compute_style_for_isolated_length = (length_name, min_length_name) =>
 			}
 		} else if (type === 'fill') {
 			return {
-				[length_name]: `min(100%, ${to_css_value(value.maximum)})`,
+				[length_name]: value.factor > 0
+					? `min(100%, ${to_css_value(value.maximum)})`
+					: '0px'
+				,
 				[min_length_name]: to_css_value(value.minimum)
 			}
 		} else {
