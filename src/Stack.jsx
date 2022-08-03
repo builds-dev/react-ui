@@ -20,32 +20,6 @@ const random_id = () =>
 		[0]
 		.toString(16)
 
-/*
-ascended<---
-           |
-           |
-foreground |
-         >--
-children
-         >--
-background |
-           |
-           |
-descended<--
-
-					foreground ascendants
-				ascendants
-			children ascendants
-		background ascendants
-	foreground
-children
-	background
-		foreground descendants
-			children descendants
-				descendants
-					background descendants
-*/
-
 export const Stack_context = createContext()
 
 const find_insert_index = (nodes, node) => {

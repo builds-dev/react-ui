@@ -10,7 +10,7 @@ Inspired by [elm-ui](https://github.com/mdgriffith/elm-ui).
 
 #### `mount_to_body (options) (layout_box)`
 
-Mounts a [layout box](#layout-boxes) to the dom body.
+Mounts a [layout box](#layout-boxes) to the dom body, within a `Stack`.
 
 Options are not implemented yet, so pass an empty object.
 
@@ -32,9 +32,47 @@ Layout boxes are 2d boxes that may contain text or other layout boxes.
 
 #### Layout box props
 
+##### `anchor_x={[ number, number ]}`, `anchor_y={[ number, number ]}`
+
+These properties only apply to [`relatives`](#relatives).
+
+default: `[ 0, 0 ]`
+
+The first number represents a point on the relative box, and the second number represents a point on the origin box. `0` refers to the start of the box along the axis, and `1` refers to the end of the box along the axis. `anchor_x={[ 0.5, 1 ]}` means to position the horizontal center (0.5) of the relative box on the right (1) of the origin box.
+
+```jsx
+<Row
+	foreground={[
+		<Box anchor_x={[ 0.5, 0.5 ]} anchor_y={[ 0.5, 0.5 ]}>
+			This box is horizontally and vertically centered in the row and in front of the row's children.
+		</Box>
+	]}
+>
+	{children}
+</Row>
+```
+
+##### `ascended={[layout_boxes]}`
+
+Place components relatively close to the front of the current [`Stack`](#stack).
+
+See [`Stack`](#stack) and [`relatives`](#relatives).
+
+##### `background={[layout_boxes]}`
+
+Place components behind children.
+
+See [`relatives`](#relatives).
+
 ##### `class_name={string}`
 
 Apply [class](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/class) attribute to the underlying dom node.
+
+##### `descended={[layout_boxes]}`
+
+Place components relatively close to the back of the current [`Stack`](#stack).
+
+See [`Stack`](#stack) and [`relatives`](#relatives).
 
 ##### `element_props={object}`
 
@@ -43,6 +81,12 @@ Pass props to the underlying React element. This prop is a temporary approach to
 ```js
 <Box element_props={{ onClick: handle_the_click }}></Box>
 ```
+
+##### `foreground={[layout_boxes]}`
+
+Place components in front of children.
+
+See [`relatives`](#relatives).
 
 ##### `height={length}`
 
@@ -88,46 +132,6 @@ import { Box, edges } from '#ui'
 {/* These are equivalent: */}
 <Box padding={{ bottom: 10, left: 10, right: 10, top: 10 }}></Box>
 <Box padding={edges (10)}></Box>
-```
-
-##### `relatives={[ relative ]}`
-
-Relatives are positioned and sized relative to the box they are attached to (origin).
-
-`relative` is `[ position, box ]`.
-
-`position` is `{ x: anchor, y: anchor, z: plane }`. It expresses a relative position in 3d space.
-
-`anchor` is `[ number, number ]`. The first number represents a point on the relative box, and the second number represents a point on the origin box. `0` refers to the start of the box along the axis, and `1` refers to the end of the box along the axis. `{ x: [ 0.5, 1 ] }` means to position the center (0.5) of the relative box on the right (1) of the origin box.
-
-The default `position` is `{ x: [ 0, 0 ], y: [ 0, 0 ], z: plane.foreground }`.
-
-See [plane](#plane).
-
-```jsx
-import { Box, plane } from '#ui'
-
-{/* This box has a relative box that is horizontally and vertically centered, twice as tall, the same width, and behind its layout children.*/}
-<Box
-	relatives=[
-		[
-			{ x: [ 0.5, 0.5 ], y: [ 0.5, 0.5 ], z: plane.background },
-			<Box height={ratio(2)} width={fill}></Box>
-		]
-	]
->
-</Box>
-
-{/* This box has a relative box that is the same height and width and in front of its layout children.*/}
-<Box
-	relatives=[
-		[
-			{ z: plane.foreground },
-			<Box height={fill} width={fill}></Box>
-		]
-	]
->
-</Box>
 ```
 
 ##### `offset_x={number}`
@@ -306,32 +310,95 @@ Disable scroll chaining and boundary default actions.
 
 Disable scroll chaining. Boundary default actions local to the scroll container (e.g. overscroll glow effect) remain enabled.
 
-#### plane
+#### relatives
 
-The values of `plane` refer to relative positions on the `z` axis for a relative box from an origin box.
+A relative is a component that is expressed in the `ascended`, `background`, `descended`, or `foreground` properties of a layout box.
 
-##### `plane.background`
+A relative is positioned and sized relative to the layout box (origin) on which it is expressed.
 
-A relative with `{ z: plane.background }` is positioned on the `z` axis at the back of the origin box.
-Layout children are in front of `plane.background`.
-Relatives positioned in `plane.background` are ordered as they appear in the list of relatives; earlier relatives are further back.
-A box's `background` property is in `plane.background` before relatives.
+A relative has no effect on the size or position of its origin or its origin's children.
 
-##### `plane.foreground`
+Relatives use properties `anchor_x` and `anchor_y` to express x and y position relative to the origin box.
 
-A relative with `{ z: plane.foreground }` is positioned on the `z` axis in front of the origin box.
-Layout children are behind `plane.foreground`.
-Relatives positioned in `plane.foreground` are ordered as they appear in the list of relatives; later relatives are further forward.
+```jsx
+import { Box } from '#ui'
 
-##### `plane.ascended`
+{/* This box has a relative box that is horizontally and vertically centered, twice as tall, the same width, and behind its layout children.*/}
+<Box
+	background={[
+		<Box anchor_x={[ 0.5, 0.5 ]} anchor_y={[ 0.5, 0.5 ]} height={ratio(2)} width={fill}></Box>
+	]}
+>
+</Box>
 
-**TODO:** `plane.ascended` should be higher _from_ the foreground, so that a parent can include a relative that is in front of the ascended relatives of its children. `plane.ascended_background` ascends _from_ the background, so that a parent can include a relative that is above its surroundings, but behind the ascended relatives of its children. Maybe it should be `plane.ascended` and `plane.ascended_foreground`... This needs to be nailed down and described well. Something for further consideration is the result of a list of relatives including ascended relatives and non-ascended relatives, where the non-ascended relatives also have ascended relatives.
-A relative with `{ z: plane.ascended }` is positioned on the `z` axis in front of everything in the current `Stack`.
-Boxes positioned in `plane.ascended` are ordered **TODO:**.
+{/* This box has a relative box that is the same height and width and in front of its layout children.*/}
+<Box
+	foreground={[
+		<Box height={fill} width={fill}></Box>
+	]}
+>
+</Box>
+```
 
-Positioning a relative in `plane.ascended` expresses that it should be relatively above its surroundings on the z axis, without knowing about the surroundings or "how high".
-`{ z: plane.ascended }` is much like `width={grow}`. An exact width is not specified, but rather the intent to take up available space. The exact width (size on the y axis) depends on the width of its parent box and widths of its siblings. Similarly, the exact position on the z axis depends on the z axis parent - the current `Stack`, and z axis siblings, which are all boxes within the stack.
+### Stack
 
-##### `plane.ascended_background`
+`Stack` is a span of z space, in which all children stack. Each successive child (including its children) is higher than the former (including its children).
 
-A relative with `{ z: plane.ascended_background }` is positioned on the `z` axis **TODO:**.
+Every layout box has a natural position in z space, above the box before it, and before the box after it. It can place other boxes in z space relative to its z position via its `ascended`, `background`, `descended`, and `foreground` properties. These further subdivide z space, and so do not conflict with the natural z stacking of boxes e.g. the foreground of a box is behind the background of its next sibling.
+
+`background` is the z space before the box's children.
+
+`foreground` is the z space after the box's children.
+
+`ascended` expresses the intent for boxes to be as in front as possible without imposing exact opinions of 'how much in front'. This is conceptually similar to `<Box width={fill}>`, where the box expresses intent to take up as much width as possible, leaving the determination of how much width that is to the surrounding context. If from a higher view, you see that some ascended relatives should be restrained to a z space prior to others, you can wrap them in a `Stack` to specify the highest point in z space they can reach.
+
+`ascended` is a nested `Stack` in the z space relatively close to the front of the most immediate `Stack`.
+
+What is meant by "relatively close" is that how close it is to the front of the stack depends the z position of the origin box. If the first and second child of a stack ascend a relative, the second child's relative is closer to the front of the stack because the second child is closer to the front of the stack. 
+
+The ascended z space from a box is itself a `Stack`, so if box A ascends a box, A1, and box B ascends a box, B1, and A1 ascends a box, A1A, then A1A is not above B1, because A1 and A1A are in a stack that is below the stack containing B1.
+
+`descended` is analogous to `ascended`, except it pertains the back of the stack, rather than the front.
+
+This depicts the relative z space positions a layout box can place components.
+```
+ascended<---
+           |
+           |
+foreground |
+         >--
+children
+         >--
+background |
+           |
+           |
+descended<--
+```
+
+This depicts the order of relative z space positions including complex combinations e.g. a box in the foreground with a descended box.
+```
+					foreground ascendants
+				ascendants
+			children ascendants
+		background ascendants
+	foreground
+children
+	background
+		foreground descendants
+			children descendants
+				descendants
+					background descendants
+```
+
+Many applications will likely have all their z position concerns handled with this pattern:
+
+```jsx
+const App = () => {
+	return <>
+		<Stack>
+			{/* most UI goes here */}
+		</Stack>
+		{/* modals and other such components go here */}
+	</>
+}
+```
