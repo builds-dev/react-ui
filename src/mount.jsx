@@ -1,9 +1,18 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom/client'
 import { css } from '@linaria/core'
-import { Box_child_style_context } from './Box_child_style_context.js'
-import { compute_style_for_layout_x_child } from './layout.js'
+import {
+	Box_child_height_style_context,
+	Box_child_position_style_context,
+	Box_child_width_style_context
+} from './Box_child_style_context.js'
+import {
+	compute_height_style_for_layout_x_child,
+	compute_position_style_for_layout_child,
+	compute_width_style_for_layout_x_child
+} from './layout.js'
 import { fill } from './length.js'
+import { Stack } from './Stack.jsx'
 
 const container_css = `
 	display: flex;
@@ -45,12 +54,16 @@ export const mount_to_body = props => App => {
 		uninject_body_style()
 	}
 	let resolve
-	const create_app = props => React.createElement(
-		Box_child_style_context.Provider,
-		{
-			value: child_props => compute_style_for_layout_x_child({ width: fill, height: fill }, child_props)
-		},
-		React.createElement(App, props)
+	const create_app = props => (
+		<Stack>
+			<Box_child_height_style_context.Provider value={compute_height_style_for_layout_x_child (fill)}>
+				<Box_child_width_style_context.Provider value={compute_width_style_for_layout_x_child (fill)}>
+					<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
+						<App {...props}/>
+					</Box_child_position_style_context.Provider>
+				</Box_child_width_style_context.Provider>
+			</Box_child_height_style_context.Provider>
+		</Stack>
 	)
 	root_element.classList.add(body_root_element)
 	const uninject_body_style = inject_style(`body { ${body_css} }`)
