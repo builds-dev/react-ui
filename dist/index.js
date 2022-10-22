@@ -700,6 +700,23 @@ const edges = Object.assign(n => ({
   })
 });
 
+const inject_style = string => {
+  const style = document.createElement('style');
+  style.textContent = string;
+  document.head.append(style);
+  return () => style.remove();
+};
+
+const Ui_Context = ({
+  children
+}) => /*#__PURE__*/React__default["default"].createElement(Stack, null, /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
+  value: compute_height_style_for_layout_x_child(fill)
+}, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
+  value: compute_width_style_for_layout_x_child(fill)
+}, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
+  value: compute_position_style_for_layout_child
+}, children))));
+
 var css_248z = ".body_b1yip317 {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmin-height: 100vh; \tmargin: 0; \tpadding: 0;}\n\n.body_root_element_b1hyngkr {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 1 100%; \talign-self: stretch;}\n\n";
 styleInject(css_248z);
 
@@ -716,17 +733,12 @@ const body_css = `
 	margin: 0;
 	padding: 0;
 `;
+const inject_body_style = () => inject_style(`body { ${body_css} }`);
 const body = "body_b1yip317";
 const body_root_element = "body_root_element_b1hyngkr";
-
-const inject_style = string => {
-  const style = document.createElement('style');
-  style.textContent = string;
-  document.head.append(style);
-  return () => style.remove();
-};
-
-const mount_to_body = props => App => {
+const create_mount_to_body = ({
+  createRoot
+}) => options => App => {
   const root_element = document.createElement('div');
   const root = createRoot(root_element);
 
@@ -736,22 +748,17 @@ const mount_to_body = props => App => {
     uninject_body_style();
   };
 
-  const create_app = props => /*#__PURE__*/React__default["default"].createElement(Stack, null, /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
-    value: compute_height_style_for_layout_x_child(fill)
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
-    value: compute_width_style_for_layout_x_child(fill)
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
-    value: compute_position_style_for_layout_child
-  }, /*#__PURE__*/React__default["default"].createElement(App, props)))));
-
   root_element.classList.add(body_root_element);
-  const uninject_body_style = inject_style(`body { ${body_css} }`);
+  const uninject_body_style = inject_body_style();
   document.body.append(root_element);
   return {
     unmount,
-    render: props => root.render(create_app(props))
+    render: props => root.render( /*#__PURE__*/React__default["default"].createElement(Ui_Context, null, /*#__PURE__*/React__default["default"].createElement(App, props)))
   };
 };
+const mount_to_body = create_mount_to_body({
+  createRoot: createRoot
+});
 
 /*
 	overscroll-behavior configures scroll "chaining" and "affordances".
@@ -834,14 +841,17 @@ exports.Column = Column;
 exports.Row = Row;
 exports.Stack = Stack;
 exports.Stack_context = Stack_context;
+exports.Ui_Context = Ui_Context;
 exports.align = align;
 exports.body = body;
 exports.body_root_element = body_root_element;
 exports.content = content;
+exports.create_mount_to_body = create_mount_to_body;
 exports.edges = edges;
 exports.fill = fill;
 exports.format_length = format_length;
 exports.grow = grow;
+exports.inject_body_style = inject_body_style;
 exports.max = max;
 exports.min = min;
 exports.mount_to_body = mount_to_body;

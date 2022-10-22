@@ -690,6 +690,23 @@ const edges = Object.assign(n => ({
   })
 });
 
+const inject_style = string => {
+  const style = document.createElement('style');
+  style.textContent = string;
+  document.head.append(style);
+  return () => style.remove();
+};
+
+const Ui_Context = ({
+  children
+}) => /*#__PURE__*/React.createElement(Stack, null, /*#__PURE__*/React.createElement(Box_child_height_style_context.Provider, {
+  value: compute_height_style_for_layout_x_child(fill)
+}, /*#__PURE__*/React.createElement(Box_child_width_style_context.Provider, {
+  value: compute_width_style_for_layout_x_child(fill)
+}, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
+  value: compute_position_style_for_layout_child
+}, children))));
+
 var css_248z = ".body_b1yip317 {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmin-height: 100vh; \tmargin: 0; \tpadding: 0;}\n\n.body_root_element_b1hyngkr {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 1 100%; \talign-self: stretch;}\n\n";
 styleInject(css_248z);
 
@@ -706,17 +723,12 @@ const body_css = `
 	margin: 0;
 	padding: 0;
 `;
+const inject_body_style = () => inject_style(`body { ${body_css} }`);
 const body = "body_b1yip317";
 const body_root_element = "body_root_element_b1hyngkr";
-
-const inject_style = string => {
-  const style = document.createElement('style');
-  style.textContent = string;
-  document.head.append(style);
-  return () => style.remove();
-};
-
-const mount_to_body = props => App => {
+const create_mount_to_body = ({
+  createRoot
+}) => options => App => {
   const root_element = document.createElement('div');
   const root = createRoot(root_element);
 
@@ -726,22 +738,17 @@ const mount_to_body = props => App => {
     uninject_body_style();
   };
 
-  const create_app = props => /*#__PURE__*/React.createElement(Stack, null, /*#__PURE__*/React.createElement(Box_child_height_style_context.Provider, {
-    value: compute_height_style_for_layout_x_child(fill)
-  }, /*#__PURE__*/React.createElement(Box_child_width_style_context.Provider, {
-    value: compute_width_style_for_layout_x_child(fill)
-  }, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
-    value: compute_position_style_for_layout_child
-  }, /*#__PURE__*/React.createElement(App, props)))));
-
   root_element.classList.add(body_root_element);
-  const uninject_body_style = inject_style(`body { ${body_css} }`);
+  const uninject_body_style = inject_body_style();
   document.body.append(root_element);
   return {
     unmount,
-    render: props => root.render(create_app(props))
+    render: props => root.render( /*#__PURE__*/React.createElement(Ui_Context, null, /*#__PURE__*/React.createElement(App, props)))
   };
 };
+const mount_to_body = create_mount_to_body({
+  createRoot: createRoot
+});
 
 /*
 	overscroll-behavior configures scroll "chaining" and "affordances".
@@ -819,4 +826,4 @@ const Row = /*#__PURE__*/forwardRef((props, ref) => /*#__PURE__*/React.createEle
   compute_width_style_for_layout_child: compute_width_style_for_layout_x_child
 }, props)));
 
-export { Box, Column, Row, Stack, Stack_context, align, body, body_root_element, content, edges, fill, format_length, grow, max, min, mount_to_body, overflow, px, ratio, to_css_value };
+export { Box, Column, Row, Stack, Stack_context, Ui_Context, align, body, body_root_element, content, create_mount_to_body, edges, fill, format_length, grow, inject_body_style, max, min, mount_to_body, overflow, px, ratio, to_css_value };
