@@ -33,9 +33,6 @@ export default async () => {
 											anchor_y={[ 0, 1 ]}
 											height={fill}
 											width={ratio(0.5)}
-											layout_x={align.center}
-											layout_y={align.center}
-											padding={edges (20)}
 											style={{ background: 'rgb(32, 35, 42)', border: '3px solid rgb(22, 24, 29)', opacity: 0.925 }}
 										>
 										</Box>
@@ -47,32 +44,27 @@ export default async () => {
 								<Box height={fill} width={fill} style={{ background: colors.c }}></Box>
 								<Box height={fill} width={fill} style={{ background: colors.d }}></Box>
 							</Row>
-							<Stack>
-								<Row height={100} width={fill} layout_x={align.start({ gap: 20 })} layout_y={align.start({ gap: 20 })}>
-									<Box height={fill} width={fill} style={{ background: colors.d }}></Box>
-									<Box height={fill} width={fill} style={{ background: colors.c }}></Box>
-									<Box
-										descended={[
-											<Box
-												class_name='descended'
-												anchor_x={[ 0, 1 ]}
-												anchor_y={[ 1, 0 ]}
-												height={fill}
-												width={ratio(0.5)}
-												layout_x={align.center}
-												layout_y={align.center}
-												padding={edges (20)}
-												style={{ background: 'rgb(32, 35, 42)', border: '3px solid rgb(22, 24, 29)', opacity: 0.925 }}
-											>
-											</Box>
-										]}
-										height={fill}
-										width={fill}
-										style={{ background: colors.b, border: '3px solid rgb(22, 24, 29)' }}
-									></Box>
-									<Box height={fill} width={fill} style={{ background: colors.a }}></Box>
-								</Row>
-							</Stack>
+							<Row height={100} width={fill} layout_x={align.start({ gap: 20 })} layout_y={align.start({ gap: 20 })}>
+								<Box height={fill} width={fill} style={{ background: colors.d }}></Box>
+								<Box height={fill} width={fill} style={{ background: colors.c }}></Box>
+								<Box
+									descended={[
+										<Box
+											class_name='descended'
+											anchor_x={[ 0, 1 ]}
+											anchor_y={[ 1, 0 ]}
+											height={fill}
+											width={ratio(0.5)}
+											style={{ background: 'rgb(32, 35, 42)', border: '3px solid rgb(22, 24, 29)', opacity: 0.925 }}
+										>
+										</Box>
+									]}
+									height={fill}
+									width={fill}
+									style={{ background: colors.b, border: '3px solid rgb(22, 24, 29)' }}
+								></Box>
+								<Box height={fill} width={fill} style={{ background: colors.a }}></Box>
+							</Row>
 						</Column>
 					</Box>
 				)

@@ -1,18 +1,8 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom/client'
 import { css } from '@linaria/core'
-import {
-	Box_child_height_style_context,
-	Box_child_position_style_context,
-	Box_child_width_style_context
-} from './Box_child_style_context.js'
-import {
-	compute_height_style_for_layout_x_child,
-	compute_position_style_for_layout_child,
-	compute_width_style_for_layout_x_child
-} from './layout.js'
-import { fill } from './length.js'
-import { Stack } from './Stack.jsx'
+import { inject_style } from './util/inject_style.js'
+import { Ui_Context } from './Ui_Context.jsx'
 
 const container_css = `
 	display: flex;
@@ -35,41 +25,27 @@ const body_root_element_css = `
 	align-self: stretch;
 `
 
+export const inject_body_style = () => inject_style(`body { ${body_css} }`)
+
 export const body = css`${body_css}`
 export const body_root_element = css`${body_root_element_css}`
 
-const inject_style = string => {
-	const style = document.createElement('style')
-	style.textContent = string
-	document.head.append(style)
-	return () => style.remove()
-}
+export const create_mount_to_body = ({ createRoot }) =>
+	options => App => {
+		const root_element = document.createElement('div')
+		const root = createRoot(root_element)
+		const unmount = () => {
+			root.unmount()
+			root_element.remove()
+			uninject_body_style()
+		}
+		root_element.classList.add(body_root_element)
+		const uninject_body_style = inject_body_style()
+		document.body.append(root_element)
+		return {
+			unmount,
+			render: props => root.render(<Ui_Context><App {...props}/></Ui_Context>)
+		}
+	}
 
-export const mount_to_body = props => App => {
-	const root_element = document.createElement('div')
-	const root = ReactDOM.createRoot(root_element)
-	const unmount = () => {
-		root.unmount()
-		root_element.remove()
-		uninject_body_style()
-	}
-	let resolve
-	const create_app = props => (
-		<Stack>
-			<Box_child_height_style_context.Provider value={compute_height_style_for_layout_x_child (fill)}>
-				<Box_child_width_style_context.Provider value={compute_width_style_for_layout_x_child (fill)}>
-					<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
-						<App {...props}/>
-					</Box_child_position_style_context.Provider>
-				</Box_child_width_style_context.Provider>
-			</Box_child_height_style_context.Provider>
-		</Stack>
-	)
-	root_element.classList.add(body_root_element)
-	const uninject_body_style = inject_style(`body { ${body_css} }`)
-	document.body.append(root_element)
-	return {
-		unmount,
-		render: props => root.render(create_app(props))
-	}
-}
+export const mount_to_body = create_mount_to_body({ createRoot: ReactDOM.createRoot })
