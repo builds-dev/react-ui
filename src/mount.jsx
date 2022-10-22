@@ -45,7 +45,7 @@ const inject_style = string => {
 	return () => style.remove()
 }
 
-export const mount_to_body = props => App => {
+export const mount_to_body = options => App => {
 	const root_element = document.createElement('div')
 	const root = ReactDOM.createRoot(root_element)
 	const unmount = () => {
@@ -53,7 +53,6 @@ export const mount_to_body = props => App => {
 		root_element.remove()
 		uninject_body_style()
 	}
-	let resolve
 	const create_app = props => (
 		<Stack>
 			<Box_child_height_style_context.Provider value={compute_height_style_for_layout_x_child (fill)}>
