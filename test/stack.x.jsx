@@ -1,7 +1,7 @@
 import * as assert from 'uvu/assert'
 import React from 'react'
 import { Box, Column, Row, Stack, align, content, edges, fill, ratio, grow, mount_to_body } from '#ui'
-import { act, rendered_px_equal } from '../../test/util.js'
+import { act, rendered_px_equal } from './util.js'
 
 // TODO: this test won't pass when run with the others and there are lots of warnings regarding act()
 

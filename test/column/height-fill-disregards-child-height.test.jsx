@@ -1,6 +1,6 @@
 import * as assert from 'uvu/assert'
 import React from 'react'
-import { Column, Box, fill, mount_to_body } from '../../src/index'
+import { Column, Box, fill, mount_to_body } from '../../src/index.js'
 import { act } from '../../test/util.js'
 
 export default async () => {
