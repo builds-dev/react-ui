@@ -174,7 +174,7 @@ const compute_position_style_for_relative_child = (anchor_x, anchor_y, offset_x 
 const compute_height_style_for_relative_child = height => compute_style_for_isolated_height(height, to_css_value);
 const compute_width_style_for_relative_child = width => compute_style_for_isolated_width(width, to_css_value);
 
-const compute_style_for_main_axis_length = (max_length_name, min_length_name) => parent_length => length => {
+const compute_style_for_main_axis_length = (length_name, max_length_name, min_length_name) => parent_length => length => {
   const {
     type,
     value
@@ -193,9 +193,8 @@ const compute_style_for_main_axis_length = (max_length_name, min_length_name) =>
     };
   } else {
     return {
-      // [min_length_name] must be explicitly set in order to set exact length via flex basis.
-      flex: '0 0 ' + compute_layout_length(parent_length, length),
-      [min_length_name]: 0
+      flex: '0 0 auto',
+      [length_name]: compute_layout_length(parent_length, length)
     };
   }
 };
@@ -206,8 +205,8 @@ const compute_position_style_for_layout_child = (anchor_x, anchor_y, offset_x, o
 });
 const compute_height_style_for_layout_x_child = parent_height => height => compute_style_for_isolated_height(height, // TODO: it seems pointless/awkward to use this function here... try refactoring
 height => compute_layout_length(parent_height, height));
-const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length('maxWidth', 'minWidth');
-const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length('maxHeight', 'minHeight');
+const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length('width', 'maxWidth', 'minWidth');
+const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length('height', 'maxHeight', 'minHeight');
 const compute_width_style_for_layout_y_child = parent_width => width => compute_style_for_isolated_width(width, // TODO: it seems pointless/awkward to use this function here... try refactoring
 width => compute_layout_length(parent_width, width));
 const cross_axis_align = {
