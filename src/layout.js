@@ -64,7 +64,7 @@ export const compute_height_style_for_relative_child = height =>
 export const compute_width_style_for_relative_child = width =>
 	compute_style_for_isolated_width(width, to_css_value)
 
-const compute_style_for_main_axis_length = (max_length_name, min_length_name) =>
+const compute_style_for_main_axis_length = (length_name, max_length_name, min_length_name) =>
 	parent_length => length => {
 		const { type, value } = length
 		if (type === 'grow') {
@@ -80,9 +80,8 @@ const compute_style_for_main_axis_length = (max_length_name, min_length_name) =>
 			}
 		} else {
 			return {
-				// [min_length_name] must be explicitly set in order to set exact length via flex basis.
-				flex: '0 0 ' + compute_layout_length(parent_length, length),
-				[min_length_name]: 0
+				flex: '0 0 auto',
+				[length_name]: compute_layout_length(parent_length, length)
 			}
 		}
 	}
@@ -104,9 +103,9 @@ export const compute_height_style_for_layout_x_child = parent_height => height =
 		height => compute_layout_length(parent_height, height)
 	)
 
-export const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length ('maxWidth', 'minWidth')
+export const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length ('width', 'maxWidth', 'minWidth')
 
-export const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length ('maxHeight', 'minHeight')
+export const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length ('height', 'maxHeight', 'minHeight')
 
 export const compute_width_style_for_layout_y_child = parent_width => width =>
 	compute_style_for_isolated_width(
