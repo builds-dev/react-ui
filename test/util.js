@@ -10,6 +10,8 @@ export const act = f => {
 		.then(() => value)
 }
 
+export const capitalize = x => x && x[0].toUpperCase() + x.slice(1)
+
 const within = lower => higher => subject => lower <= subject && subject <= higher
 
 export const rendered_px_equal = x => within (x - 0.5) (x + 0.5)
