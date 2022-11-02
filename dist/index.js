@@ -83,14 +83,12 @@ const content = grow({
 });
 const fill = (fill => Object.assign(fill, fill({})))(({
   factor = 1,
-  minimum = 0,
   maximum = Infinity
 }) => ({
   type: 'fill',
   value: {
     factor,
-    maximum: format_length(maximum),
-    minimum: format_length(minimum)
+    maximum: format_length(maximum)
   }
 }));
 
