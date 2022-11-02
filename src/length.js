@@ -21,12 +21,11 @@ export const grow = (grow => Object.assign (grow, grow ({ factor: 1 }))) (value 
 export const content = grow ({ factor: 0 })
 
 export const fill = (fill => Object.assign (fill, fill ({})))
-	(({ factor = 1, minimum = 0, maximum = Infinity }) => ({
+	(({ factor = 1, maximum = Infinity }) => ({
 		type: 'fill',
 		value: {
 			factor,
-			maximum: format_length(maximum),
-			minimum: format_length(minimum)
+			maximum: format_length(maximum)
 		}
 	}))
 
