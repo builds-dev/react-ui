@@ -1,13 +1,17 @@
-import React, { useContext, useImperativeHandle, useMemo, useRef } from 'react'
-import { forwardRef, useEffect, useState } from 'react'
+import React, {
+	forwardRef,
+	useContext,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState
+} from 'react'
 import { join_classnames } from './lib.js'
 import { content, format_length, to_css_value } from './length.js'
 import {
-	Box_child_height_style_context,
-	Box_child_position_style_context,
-	Box_child_width_style_context
+	Box_child_computation_context,
+	Box_child_position_style_context
 } from './Box_child_style_context.js'
-import { Box_transformation_context } from './Box_transformation_context.js'
 import {
 	compute_contain,
 	compute_position_style_for_layout_child,
@@ -21,21 +25,44 @@ import { Stack_context } from './Stack.jsx'
 import { map, map_all } from './util/react.js'
 import { identity } from './util/identity.js'
 
-const call = (f, x) => f(x)
 const call5 = (f, a, b, c, d, e) => f(a, b, c, d, e)
+const create_object = () => Object.create(null)
 
+export const combine_component_styles = (
+	contain,
+	overflow,
+	padding,
+	style_as_layout_parent,
+	height_style_as_layout_box_child,
+	width_style_as_layout_box_child,
+	position_style_as_layout_box_child,
+	prop_style
+) => ({
+	contain,
+	padding,
+	...overflow,
+	...style_as_layout_parent,
+	...height_style_as_layout_box_child,
+	...width_style_as_layout_box_child,
+	...position_style_as_layout_box_child,
+	...prop_style
+})
+
+const relative_child_computation_context_value = (height, width) => [
+	compute_height_style_for_relative_child (height),
+	compute_width_style_for_relative_child (width),
+	identity
+]
+
+const with_default_key = (x, default_key) => x.key === null ? React.cloneElement(x, { key: default_key }) : x
 const prepare_relatives = relatives =>
 	relatives
 		?
-			<Box_child_height_style_context.Provider value={compute_height_style_for_relative_child}>
-				<Box_child_width_style_context.Provider value={compute_width_style_for_relative_child}>
-					<Box_child_position_style_context.Provider value={compute_position_style_for_relative_child}>
-						<Box_transformation_context.Provider value={identity}>
-							{relatives.map((x, index) => x.key === null ? React.cloneElement(x, { key: index }) : x)}
-						</Box_transformation_context.Provider>
-					</Box_child_position_style_context.Provider>
-				</Box_child_width_style_context.Provider>
-			</Box_child_height_style_context.Provider>
+			<Box_child_computation_context.Provider value={relative_child_computation_context_value}>
+				<Box_child_position_style_context.Provider value={compute_position_style_for_relative_child}>
+					{relatives.map(with_default_key)}
+				</Box_child_position_style_context.Provider>
+			</Box_child_computation_context.Provider>
 		:
 			null
 
@@ -61,9 +88,6 @@ const prepare_relatives = relatives =>
 		- compute_style_as_layout_parent
 		- compute_height_style_for_layout_child
 		- compute_width_style_for_layout_child
-
-	Row passes this so that it can wrap height fill children when necessary, and it never changes:
-	- child_transformation
 */
 
 const anchor_default = [ 0, 0 ]
@@ -79,12 +103,9 @@ export const Layout_box = forwardRef((
 		anchor_x: prop_anchor_x,
 		anchor_y: prop_anchor_y,
 		background: prop_background,
-		child_transformation: prop_child_transformation,
 		children,
 		class_name,
 		compute_style_as_layout_parent,
-		compute_height_style_for_layout_child,
-		compute_width_style_for_layout_child,
 		descended,
 		element_props,
 		foreground: prop_foreground,
@@ -98,6 +119,7 @@ export const Layout_box = forwardRef((
 		overflow,
 		style: prop_style,
 		tag,
+		use_computation_context_value,
 		width: prop_width,
 	},
 	_ref
@@ -115,16 +137,12 @@ export const Layout_box = forwardRef((
 	const Tag = map (prepare_tag) (tag)
 	const width = map (prepare_length) (prop_width)
 
-	const compute_height_style_as_layout_box_child = useContext(Box_child_height_style_context)
 	const compute_position_style_as_layout_box_child = useContext(Box_child_position_style_context)
-	const compute_width_style_as_layout_box_child = useContext(Box_child_width_style_context)
-	const context_transformation = useContext(Box_transformation_context)
-	const child_transformation = prop_child_transformation
-		?
-			map
-			(prop_child_transformation)
-			(height)
-		: identity
+	const [
+		height_style_as_layout_box_child,
+		width_style_as_layout_box_child,
+		context_transform
+	] = useContext(Box_child_computation_context)(height, width)
 
 	const className = map (x => join_classnames(layout_class_name, x)) (class_name)
 
@@ -139,13 +157,6 @@ export const Layout_box = forwardRef((
 			layout_y
 		)
 
-	const height_style_as_layout_box_child = map_all
-		(call)
-		(
-			compute_height_style_as_layout_box_child,
-			height
-		)
-
 	const position_style_as_layout_box_child = map_all
 		(call5)
 		(
@@ -157,15 +168,8 @@ export const Layout_box = forwardRef((
 			ref.current
 		)
 
-	const width_style_as_layout_box_child = map_all
-		(call)
-		(
-			compute_width_style_as_layout_box_child,
-			width
-		)
-
 	const stack = useContext(Stack_context)
-	const [ state ] = useState(() => ({}))
+	const [ state ] = useState(create_object)
 
 	useEffect(
 		() => {
@@ -198,48 +202,24 @@ export const Layout_box = forwardRef((
 	)
 
 	const style = map_all
-		((
-			contain,
-			overflow,
-			padding,
-			style_as_layout_parent,
-			height_style_as_layout_box_child,
-			position_style_as_layout_box_child,
-			width_style_as_layout_box_child,
-			prop_style
-		) => ({
-			contain,
-			padding,
-			...overflow,
-			...style_as_layout_parent,
-			...height_style_as_layout_box_child,
-			...position_style_as_layout_box_child,
-			...width_style_as_layout_box_child,
-			...prop_style
-		}))
+		(combine_component_styles)
 		(
 			contain,
 			overflow,
 			padding,
 			style_as_layout_parent,
 			height_style_as_layout_box_child,
-			position_style_as_layout_box_child,
 			width_style_as_layout_box_child,
+			position_style_as_layout_box_child,
 			prop_style
 		)
 
-	const box_child_height_style_context_value = map
-		(compute_height_style_for_layout_child)
-		(height)
-
-	const box_child_width_style_context_value = map
-		(compute_width_style_for_layout_child)
-		(width)
+	const child_computation_context_value = use_computation_context_value(height, width)
 
 	const background = map (prepare_relatives) (prop_background)
 	const foreground = map (prepare_relatives) (prop_foreground)
 
-	return context_transformation(
+	return context_transform(
 		<Tag
 			{...element_props}
 			className={className}
@@ -247,17 +227,12 @@ export const Layout_box = forwardRef((
 			style={style}
 		>
 			{background}
-			<Box_child_height_style_context.Provider value={box_child_height_style_context_value}>
-				<Box_child_width_style_context.Provider value={box_child_width_style_context_value}>
-					<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
-						<Box_transformation_context.Provider value={child_transformation}>
-							{children}
-						</Box_transformation_context.Provider>
-					</Box_child_position_style_context.Provider>
-				</Box_child_width_style_context.Provider>
-			</Box_child_height_style_context.Provider>
+			<Box_child_computation_context.Provider value={child_computation_context_value}>
+				<Box_child_position_style_context.Provider value={compute_position_style_for_layout_child}>
+					{children}
+				</Box_child_position_style_context.Provider>
+			</Box_child_computation_context.Provider>
 			{foreground}
-		</Tag>,
-		height
+		</Tag>
 	)
 })
