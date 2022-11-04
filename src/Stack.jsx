@@ -9,10 +9,10 @@ import React, {
 import { map, map_all } from './util/react.js'
 import { to_css_value } from './length.js'
 import {
-	Box_child_height_style_context,
-	Box_child_position_style_context,
-	Box_child_width_style_context
+	Box_child_computation_context,
+	Box_child_position_style_context
 } from './Box_child_style_context.js'
+import { identity } from './util/identity.js'
 
 const random_id = () =>
   window.crypto.getRandomValues(new Uint32Array(1))
@@ -50,11 +50,10 @@ const compute_style_for_distant_length = (length_name, min_length_name) => paren
 		}
 	} else if (type === 'fill') {
 		return {
-			[length_name]: value.factor > 0
+			[length_name]: '0px',
+			[min_length_name]: value.factor > 0
 				? `min(${parent_px}px, ${to_css_value(value.maximum)})`
 				: '0px'
-			,
-			[min_length_name]: to_css_value(value.minimum)
 		}
 	} else if (type === 'ratio') {
 		return {
@@ -127,14 +126,19 @@ const Representative = ({ node, origin_node, children }) => {
 		)
 		(position_offset, node_height, node_width)
 
+	// TODO: useMemo? All the child height/width context stuff is an inefficient mess.
+	const child_computation_context_value = (height, width) => [
+		box_child_height_style_context_value (height),
+		box_child_width_style_context_value (width),
+		identity
+	]
+
 	return (
-		<Box_child_height_style_context.Provider value={box_child_height_style_context_value}>
-			<Box_child_width_style_context.Provider value={box_child_width_style_context_value}>
-				<Box_child_position_style_context.Provider value={box_child_position_style_context_value}>
-					{children}
-				</Box_child_position_style_context.Provider>
-			</Box_child_width_style_context.Provider>
-		</Box_child_height_style_context.Provider>
+		<Box_child_computation_context.Provider value={child_computation_context_value}>
+			<Box_child_position_style_context.Provider value={box_child_position_style_context_value}>
+				{children}
+			</Box_child_position_style_context.Provider>
+		</Box_child_computation_context.Provider>
 	)
 }
 

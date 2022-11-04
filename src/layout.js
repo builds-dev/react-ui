@@ -2,6 +2,7 @@ import { content } from './length.js'
 import { to_css_value } from './length.js'
 import { css } from '@linaria/core'
 import * as align from './align.js'
+import { identity } from './util/identity.js'
 
 /*
 	ratio of main axis of a content-sized parent is incoherent - the parent's size is based on the child, and the child is expressing a ratio of the parent's size.
@@ -115,6 +116,22 @@ export const compute_width_style_for_layout_y_child = parent_width => width =>
 		width => compute_layout_length(parent_width, width)
 	)
 
+export const compute_wrap_and_length_style_for_layout_x_child = (parent_height, parent_width) => (child_height, child_width) => ({
+	wrap: identity,
+	style: {
+		...compute_height_style_for_layout_x_child (parent_height, child_height),
+		...compute_width_style_for_layout_x_child (parent_width, child_width)
+	}
+})
+
+export const compute_wrap_and_length_style_for_layout_y_child = (parent_height, parent_width) => (child_height, child_width) => ({
+	wrap: identity,
+	style: {
+		...compute_height_style_for_layout_y_child (parent_height, child_height),
+		...compute_width_style_for_layout_y_child (parent_width, child_width)
+	}
+})
+
 const cross_axis_align = {
 	'flex-start': 'flex-start',
 	'center': 'center',
@@ -170,3 +187,21 @@ export const row = css`
 	${layout_box_child_css}
 	flex-direction: row;
 `
+
+// TODO: expressions within this and/or the functions it calls could `useMemo`
+export const use_computation_x_context_value = (height, width) =>
+	(child_height, child_width) =>
+		[
+			compute_height_style_for_layout_x_child (height) (child_height),
+			compute_width_style_for_layout_x_child (width) (child_width),
+			identity
+		]
+
+// TODO: expressions within this and/or the functions it calls could `useMemo`
+export const use_computation_y_context_value = (height, width) =>
+	(child_height, child_width) =>
+		[
+			compute_height_style_for_layout_y_child (height) (child_height),
+			compute_width_style_for_layout_y_child (width) (child_width),
+			identity
+		]
