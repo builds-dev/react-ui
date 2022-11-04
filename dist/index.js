@@ -103,6 +103,8 @@ const func = name => parameters => ({
 const max = func('max');
 const min = func('min');
 
+const identity = x => x;
+
 function styleInject(css, ref) {
   if (ref === void 0) ref = {};
   var insertAt = ref.insertAt;
@@ -243,7 +245,9 @@ const compute_style_for_layout_y_parent = (layout_x, layout_y) => ({
 });
 const box = "box_bb7yjy4";
 const column = "column_c1m6442m";
-const row = "row_r8o4g34";
+const row = "row_r8o4g34"; // TODO: expressions within this and/or the functions it calls could `useMemo`
+
+const use_computation_y_context_value = (height, width) => (child_height, child_width) => [compute_height_style_for_layout_y_child(height)(child_height), compute_width_style_for_layout_y_child(width)(child_width), identity];
 
 const join_classnames = (...a) => {
   if (a[0]) {
@@ -265,11 +269,8 @@ const padding_to_css = ({
   top = 0
 }) => top + 'px ' + right + 'px ' + bottom + 'px ' + left + 'px';
 
-const Box_child_height_style_context = /*#__PURE__*/React.createContext();
+const Box_child_computation_context = /*#__PURE__*/React.createContext();
 const Box_child_position_style_context = /*#__PURE__*/React.createContext();
-const Box_child_width_style_context = /*#__PURE__*/React.createContext();
-
-const Box_transformation_context = /*#__PURE__*/React.createContext();
 
 var createRoot;
 
@@ -332,8 +333,8 @@ const compute_style_for_distant_length = (length_name, min_length_name) => paren
     };
   } else if (type === 'fill') {
     return {
-      [length_name]: value.factor > 0 ? `min(${parent_px}px, ${to_css_value(value.maximum)})` : '0px',
-      [min_length_name]: to_css_value(value.minimum)
+      [length_name]: '0px',
+      [min_length_name]: value.factor > 0 ? `min(${parent_px}px, ${to_css_value(value.maximum)})` : '0px'
     };
   } else if (type === 'ratio') {
     return {
@@ -402,14 +403,15 @@ const Representative = ({
   } : {
     position: 'absolute',
     transform: `translate3d(calc(${anchor_x[0] * -100}% + ${position_offset.left + parent_width * anchor_x[1] + offset_x}px), calc(${anchor_y[0] * -100}% + ${position_offset.top + parent_height * anchor_y[1] + offset_y}px), 0)`
-  })(position_offset, node_height, node_width);
-  return /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
-    value: box_child_height_style_context_value
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
-    value: box_child_width_style_context_value
+  })(position_offset, node_height, node_width); // TODO: useMemo? All the child height/width context stuff is an inefficient mess.
+
+  const child_computation_context_value = (height, width) => [box_child_height_style_context_value(height), box_child_width_style_context_value(width), identity];
+
+  return /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+    value: child_computation_context_value
   }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
     value: box_child_position_style_context_value
-  }, children)));
+  }, children));
 };
 
 const Stack = ({
@@ -507,23 +509,32 @@ const Stack = ({
   }, descendants.length ? /*#__PURE__*/React__default["default"].createElement(Stack, null, descendants) : null, children, ascendants.length ? /*#__PURE__*/React__default["default"].createElement(Stack, null, ascendants) : null));
 };
 
-const identity = x => x;
-
-const call = (f, x) => f(x);
-
 const call5 = (f, a, b, c, d, e) => f(a, b, c, d, e);
 
-const prepare_relatives = relatives => relatives ? /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
-  value: compute_height_style_for_relative_child
-}, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
-  value: compute_width_style_for_relative_child
+const create_object = () => Object.create(null);
+
+const combine_component_styles = (contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, width_style_as_layout_box_child, position_style_as_layout_box_child, prop_style) => ({
+  contain,
+  padding,
+  ...overflow,
+  ...style_as_layout_parent,
+  ...height_style_as_layout_box_child,
+  ...width_style_as_layout_box_child,
+  ...position_style_as_layout_box_child,
+  ...prop_style
+});
+
+const relative_child_computation_context_value = (height, width) => [compute_height_style_for_relative_child(height), compute_width_style_for_relative_child(width), identity];
+
+const with_default_key = (x, default_key) => x.key === null ? /*#__PURE__*/React__default["default"].cloneElement(x, {
+  key: default_key
+}) : x;
+
+const prepare_relatives = relatives => relatives ? /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+  value: relative_child_computation_context_value
 }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
   value: compute_position_style_for_relative_child
-}, /*#__PURE__*/React__default["default"].createElement(Box_transformation_context.Provider, {
-  value: identity
-}, relatives.map((x, index) => x.key === null ? /*#__PURE__*/React__default["default"].cloneElement(x, {
-  key: index
-}) : x))))) : null;
+}, relatives.map(with_default_key))) : null;
 /*
 	Layout boxes do not know whether they are layout children or relatives, nor anything about their parent.
 	A layout box must consume a function from context that interprets its props according to the parent's concerns.
@@ -546,9 +557,6 @@ const prepare_relatives = relatives => relatives ? /*#__PURE__*/React__default["
 		- compute_style_as_layout_parent
 		- compute_height_style_for_layout_child
 		- compute_width_style_for_layout_child
-
-	Row passes this so that it can wrap height fill children when necessary, and it never changes:
-	- child_transformation
 */
 
 
@@ -569,12 +577,9 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
   anchor_x: prop_anchor_x,
   anchor_y: prop_anchor_y,
   background: prop_background,
-  child_transformation: prop_child_transformation,
   children,
   class_name,
   compute_style_as_layout_parent,
-  compute_height_style_for_layout_child,
-  compute_width_style_for_layout_child,
   descended,
   element_props,
   foreground: prop_foreground,
@@ -588,6 +593,7 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
   overflow,
   style: prop_style,
   tag,
+  use_computation_context_value,
   width: prop_width
 }, _ref) => {
   const ref = React.useRef();
@@ -600,19 +606,14 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
   const padding = map(prepare_padding)(prop_padding);
   const Tag = map(prepare_tag)(tag);
   const width = map(prepare_length)(prop_width);
-  const compute_height_style_as_layout_box_child = React.useContext(Box_child_height_style_context);
   const compute_position_style_as_layout_box_child = React.useContext(Box_child_position_style_context);
-  const compute_width_style_as_layout_box_child = React.useContext(Box_child_width_style_context);
-  const context_transformation = React.useContext(Box_transformation_context);
-  const child_transformation = prop_child_transformation ? map(prop_child_transformation)(height) : identity;
+  const [height_style_as_layout_box_child, width_style_as_layout_box_child, context_transform] = React.useContext(Box_child_computation_context)(height, width);
   const className = map(x => join_classnames(layout_class_name, x))(class_name);
   const contain = map_all(compute_contain)(height, width, overflow);
   const style_as_layout_parent = map_all(compute_style_as_layout_parent)(layout_x, layout_y);
-  const height_style_as_layout_box_child = map_all(call)(compute_height_style_as_layout_box_child, height);
   const position_style_as_layout_box_child = map_all(call5)(compute_position_style_as_layout_box_child, anchor_x, anchor_y, offset_x, offset_y, ref.current);
-  const width_style_as_layout_box_child = map_all(call)(compute_width_style_as_layout_box_child, width);
   const stack = React.useContext(Stack_context);
-  const [state] = React.useState(() => ({}));
+  const [state] = React.useState(create_object);
   React.useEffect(() => {
     if (!ref.current) {
       return;
@@ -639,33 +640,19 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
       state.stack.update_descendants(descended || []);
     }
   }, [descended, ref.current]);
-  const style = map_all((contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, position_style_as_layout_box_child, width_style_as_layout_box_child, prop_style) => ({
-    contain,
-    padding,
-    ...overflow,
-    ...style_as_layout_parent,
-    ...height_style_as_layout_box_child,
-    ...position_style_as_layout_box_child,
-    ...width_style_as_layout_box_child,
-    ...prop_style
-  }))(contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, position_style_as_layout_box_child, width_style_as_layout_box_child, prop_style);
-  const box_child_height_style_context_value = map(compute_height_style_for_layout_child)(height);
-  const box_child_width_style_context_value = map(compute_width_style_for_layout_child)(width);
+  const style = map_all(combine_component_styles)(contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, width_style_as_layout_box_child, position_style_as_layout_box_child, prop_style);
+  const child_computation_context_value = use_computation_context_value(height, width);
   const background = map(prepare_relatives)(prop_background);
   const foreground = map(prepare_relatives)(prop_foreground);
-  return context_transformation( /*#__PURE__*/React__default["default"].createElement(Tag, _extends__default["default"]({}, element_props, {
+  return context_transform( /*#__PURE__*/React__default["default"].createElement(Tag, _extends__default["default"]({}, element_props, {
     className: className,
     ref: ref,
     style: style
-  }), background, /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
-    value: box_child_height_style_context_value
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
-    value: box_child_width_style_context_value
+  }), background, /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+    value: child_computation_context_value
   }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
     value: compute_position_style_for_layout_child
-  }, /*#__PURE__*/React__default["default"].createElement(Box_transformation_context.Provider, {
-    value: child_transformation
-  }, children)))), foreground), height);
+  }, children)), foreground));
 });
 
 /*
@@ -677,19 +664,17 @@ const Box = /*#__PURE__*/React.forwardRef(({
   children,
   ...props
 }, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
-  ref: ref,
-  layout_class_name: box,
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
-  compute_height_style_for_layout_child: compute_height_style_for_layout_y_child,
-  compute_width_style_for_layout_child: compute_width_style_for_layout_y_child
+  use_computation_context_value: use_computation_y_context_value,
+  layout_class_name: box,
+  ref: ref
 }, props), children));
 
 const Column = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
-  ref: ref,
-  layout_class_name: column,
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
-  compute_height_style_for_layout_child: compute_height_style_for_layout_y_child,
-  compute_width_style_for_layout_child: compute_width_style_for_layout_y_child
+  use_computation_context_value: use_computation_y_context_value,
+  layout_class_name: column,
+  ref: ref
 }, props)));
 
 const edges = Object.assign(n => ({
@@ -715,17 +700,16 @@ const inject_style = string => {
   return () => style.remove();
 };
 
+const child_computation_context_value = (height, width) => [compute_height_style_for_layout_x_child(fill)(height), compute_width_style_for_layout_x_child(fill)(width), identity]; // TODO: accept only one child!
+
+
 const Ui_Context = ({
   children
-}) => /*#__PURE__*/React__default["default"].createElement(Stack, null, /*#__PURE__*/React__default["default"].createElement(Box_child_height_style_context.Provider, {
-  value: compute_height_style_for_layout_x_child(fill)
-}, /*#__PURE__*/React__default["default"].createElement(Box_child_width_style_context.Provider, {
-  value: compute_width_style_for_layout_x_child(fill)
+}) => /*#__PURE__*/React__default["default"].createElement(Stack, null, /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+  value: child_computation_context_value
 }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
   value: compute_position_style_for_layout_child
-}, /*#__PURE__*/React__default["default"].createElement(Box_transformation_context.Provider, {
-  value: identity
-}, children)))));
+}, children)));
 
 var css_248z$1 = ".body_b1yip317 {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tmin-height: 100vh; \tmargin: 0; \tpadding: 0;}\n\n.body_root_element_b1hyngkr {display: flex; \tflex-direction: row; \tflex-wrap: nowrap; \talign-items: flex-start; \tjustify-content: flex-start; \tflex: 1 1 100%; \talign-self: stretch;}\n\n";
 styleInject(css_248z$1);
@@ -838,22 +822,28 @@ var overflow = /*#__PURE__*/Object.freeze({
 	visible: visible
 });
 
-var css_248z = ".row_height_fill_child_wrapper_rpzldh1 {\n\talign-self: stretch;\n}\n\n";
+var css_248z = ".row_height_fill_child_wrapper_rpzldh1 {\n\talign-self: stretch;\n\t& > * {\n\t\theight: 100%;\n\t}\n}\n\n";
 styleInject(css_248z);
 
 const row_height_fill_child_wrapper = "row_height_fill_child_wrapper_rpzldh1";
 
-const wrap_height_fill_child = parent_height => (child, child_height) => child_height.type === 'fill' && (parent_height.type === 'fill' || parent_height.type === 'grow') ? /*#__PURE__*/React__default["default"].createElement("div", {
-  className: row_height_fill_child_wrapper
-}, child) : child;
+const wrap = (component, parent_width, child_width) => /*#__PURE__*/React__default["default"].createElement("div", {
+  className: row_height_fill_child_wrapper,
+  style: compute_width_style_for_layout_x_child(parent_width)(child_width)
+}, component);
+
+const wrap_height_fill_child = (height, width) => (child_height, child_width) => child_height.type === 'fill' ? [compute_height_style_for_layout_x_child(height)(child_height), null, component => wrap(component, width, child_width)] : not_wrapped(height, width)(child_height, child_width);
+
+const not_wrapped = (height, width) => (child_height, child_width) => [compute_height_style_for_layout_x_child(height)(child_height), compute_width_style_for_layout_x_child(width)(child_width), identity]; // TODO: expressions within this and/or the functions it calls could `useMemo`
+
+
+const use_computation_context_value = (height, width) => (height.type === 'grow' ? wrap_height_fill_child : not_wrapped)(height, width);
 
 const Row = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
-  ref: ref,
-  layout_class_name: row,
-  child_transformation: wrap_height_fill_child,
   compute_style_as_layout_parent: compute_style_for_layout_x_parent,
-  compute_height_style_for_layout_child: compute_height_style_for_layout_x_child,
-  compute_width_style_for_layout_child: compute_width_style_for_layout_x_child
+  use_computation_context_value: use_computation_context_value,
+  layout_class_name: row,
+  ref: ref
 }, props)));
 
 exports.Box = Box;
