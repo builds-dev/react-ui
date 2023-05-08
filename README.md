@@ -239,7 +239,7 @@ Because `content` and `grow` lengths are computed from content, a ratio of a `co
 <Row height={content} width={content}>
 	<Box height={100} width={100}></Box>
 	{/* The following box has a height and width of 0, because its parent's height and width are `content` */}
-	<Box width={50%}></Box>
+	<Box height={ratio(0.5)} width={ratio(0.5)}></Box>
 </Row>
 ```
 
@@ -358,7 +358,7 @@ What is meant by "relatively close" is that how close it is to the front of the 
 
 The ascended z space from a box is itself a `Stack`, so if box A ascends a box, A1, and box B ascends a box, B1, and A1 ascends a box, A1A, then A1A is not above B1, because A1 and A1A are in a stack that is below the stack containing B1.
 
-`descended` is analogous to `ascended`, except it pertains the back of the stack, rather than the front.
+`descended` is analogous to `ascended`, except it pertains to the back of the stack, rather than the front.
 
 This depicts the relative z space positions a layout box can place components.
 ```
