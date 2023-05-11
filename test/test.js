@@ -10,47 +10,31 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const keep_alive = process.env.RUN === 'debug'
 
-const suites = tests
+// const suites = tests
+tests
 	.map(({ path: file, export: test_f }) => ({
 		test_f,
 		test_name: basename(file, '.test.jsx').split('_').join(' '),
 		suite_name: basename(dirname(file))
 	}))
 	.reduce(
-		(suites, { suite_name, ...test }) => {
-			suites[suite_name] = suites[suite_name] || []
-			suites[suite_name].push(test)
-			return suites
+		async (promise, { test_f, test_name, suite_name }) => {
+			await promise
+			console.log(`${suite_name}: ${test_name}`)
+			try {
+				const unmount = await test_f()
+				keep_alive || await act(unmount)
+			} catch (error) {
+				throw new Error(JSON.stringify({
+					code: error.code,
+					message: error.message,
+					name: error.name,
+					suite_name,
+					test_name,
+					...error
+				}))
+			}
 		},
-		{}
-	)
-
-Object.entries(suites)
-	.reduce(
-		(previous_suite_promise, [ suite_name, tests ]) =>
-			previous_suite_promise.then(() => {
-				return tests.reduce(
-					(previous_test_promise, { test_name, test_f }) =>
-						previous_test_promise.then(() => {
-							return new Promise((resolve, reject) => {
-								test(`${suite_name}: ${test_name}`, async () => {
-									try {
-										const unmount = await Promise.resolve(test_f())
-										keep_alive || await act(unmount)
-										resolve()
-									} catch (error) {
-										reject(error)
-										throw error
-									}
-								})
-								return test.run()
-							})
-						})
-					,
-					Promise.resolve()
-				)
-			})
-		,
 		Promise.resolve()
 	)
-	.finally(() => keep_alive || window.close())
+		.then(() => keep_alive || window.close())

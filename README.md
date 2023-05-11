@@ -239,13 +239,13 @@ Because `content` and `grow` lengths are computed from content, a ratio of a `co
 <Row height={content} width={content}>
 	<Box height={100} width={100}></Box>
 	{/* The following box has a height and width of 0, because its parent's height and width are `content` */}
-	<Box width={50%}></Box>
+	<Box height={ratio(0.5)} width={ratio(0.5)}></Box>
 </Row>
 ```
 
 ##### `grow`, `grow ({ factor: number })`
 
-`grow` means to be at least the length of content plus a portion of remaining length, which is distributed according to `factor`.
+`grow` means to be at least the length of content plus a portion of remaining parent length, which is distributed according to `factor`.
 Siblings with `grow ({ factor: 1 })` will grow by equal amounts.
 
 `grow` is shorthand for `grow ({ factor: 1 })`.
@@ -256,9 +256,17 @@ Siblings with `grow ({ factor: 1 })` will grow by equal amounts.
 
 `content` is equivalent to `grow ({ factor: 0 })`.
 
-##### `fill`, `fill ({ factor = 0, maximum = Infinity })`
+##### `expand`, `expand({ factor = 1 })`
 
-`fill` means to have a length that is a portion of remaining parent length, but no greater than `maximum`.
+**NOTE:** `expand` does not work as a value of `height` on children of `Column` due to implementation difficulty. Help is welcome!
+
+`expand` means the length is expanded by content, within a portion of parent length, which is distributed according to `factor`.
+
+`expand` is shorthand for `expand ({ factor: 1 })`
+
+##### `fill`, `fill ({ factor = 1, maximum = Infinity })`
+
+`fill` means to have a length that is a portion of remaining parent length, which is distrubuted according to `factor`, but no greater than `maximum`.
 
 `fill` is shorthand for `fill ({ factor: 1, maximum: Infinity })`.
 
@@ -358,7 +366,7 @@ What is meant by "relatively close" is that how close it is to the front of the 
 
 The ascended z space from a box is itself a `Stack`, so if box A ascends a box, A1, and box B ascends a box, B1, and A1 ascends a box, A1A, then A1A is not above B1, because A1 and A1A are in a stack that is below the stack containing B1.
 
-`descended` is analogous to `ascended`, except it pertains the back of the stack, rather than the front.
+`descended` is analogous to `ascended`, except it pertains to the back of the stack, rather than the front.
 
 This depicts the relative z space positions a layout box can place components.
 ```

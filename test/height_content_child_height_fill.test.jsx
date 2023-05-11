@@ -42,11 +42,13 @@ export default async () => {
 	;[
 		{
 			Layout: Column,
+			layout_name: 'Column',
 			main_axis_length_name: 'height',
 			cross_axis_length_name: 'width'
 		},
 		{
 			Layout: Row,
+			layout_name: 'Row',
 			main_axis_length_name: 'width',
 			cross_axis_length_name: 'height'
 		}
@@ -58,7 +60,7 @@ export default async () => {
 		assert.equal(
 			child['client' + capitalize(props.cross_axis_length_name)],
 			content_length,
-			'child filled up all, and no more, of the main axis space made available by its sibling'
+			`child of ${props.layout_name} filled up all, and no more, of the cross axis space (${props.cross_axis_length_name}) made available by its sibling`
 		)
 	})
 
