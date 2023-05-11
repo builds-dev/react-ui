@@ -245,7 +245,7 @@ Because `content` and `grow` lengths are computed from content, a ratio of a `co
 
 ##### `grow`, `grow ({ factor: number })`
 
-`grow` means to be at least the length of content plus a portion of remaining length, which is distributed according to `factor`.
+`grow` means to be at least the length of content plus a portion of remaining parent length, which is distributed according to `factor`.
 Siblings with `grow ({ factor: 1 })` will grow by equal amounts.
 
 `grow` is shorthand for `grow ({ factor: 1 })`.
@@ -256,9 +256,17 @@ Siblings with `grow ({ factor: 1 })` will grow by equal amounts.
 
 `content` is equivalent to `grow ({ factor: 0 })`.
 
-##### `fill`, `fill ({ factor = 0, maximum = Infinity })`
+##### `expand`, `expand({ factor = 1 })`
 
-`fill` means to have a length that is a portion of remaining parent length, but no greater than `maximum`.
+**NOTE:** `expand` does not work as a value of `height` on children of `Column` due to implementation difficulty. Help is welcome!
+
+`expand` means the length is expanded by content, within a portion of parent length, which is distributed according to `factor`.
+
+`expand` is shorthand for `expand ({ factor: 1 })`
+
+##### `fill`, `fill ({ factor = 1, maximum = Infinity })`
+
+`fill` means to have a length that is a portion of remaining parent length, which is distrubuted according to `factor`, but no greater than `maximum`.
 
 `fill` is shorthand for `fill ({ factor: 1, maximum: Infinity })`.
 

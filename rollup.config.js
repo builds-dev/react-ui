@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import linaria from '@linaria/rollup'
 import postcss from 'rollup-plugin-postcss'
 import resolve from '@rollup/plugin-node-resolve'
-import babel_config from './.babelrc.json'
+import babel_config from './.babelrc.json' assert { type: 'json' }
 import pkg from './package.json'
 
 const plugins = [

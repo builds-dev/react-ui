@@ -6,10 +6,14 @@ import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
 import browser_run from 'browser-run'
 import glob_module_files from 'glob-module-file'
-import linaria from '@linaria/rollup'
-import babel_config from './.babelrc.json'
+import _linaria from '@linaria/rollup'
+import babel_config from './.babelrc.json' assert { type: 'json' }
 import postcss from 'rollup-plugin-postcss'
 import virtual from '@rollup/plugin-virtual'
+import { Readable } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
+const linaria = _linaria.default
+import * as playwright from 'playwright'
 
 export default async () => ({
 	input: 'test/test.js',
@@ -50,7 +54,7 @@ export default async () => ({
 			babelrc: false,
 			babelHelpers: 'bundled',
 			sourceMaps: 'inline',
-			compact: false,
+			compact: true,
 			presets: babel_config.presets
 		}),
 		...(
@@ -66,11 +70,41 @@ export default async () => ({
 		),
 		process.env.RUN === 'test'
 			&& {
-				generateBundle: (options, bundle) => {
-					const browser = browser_run({ browser: 'electron' })
-					browser.write(bundle['app.js'].code)
-					browser.pipe(process.stdout)
-					browser.end()
+				generateBundle: async (options, bundle) => {
+					const browser = await playwright['chromium'].launch({ headless: false })
+					const page = await browser.newPage()
+					page.on('console', console.log)
+					const close = new Promise(resolve => page.on('close', resolve))
+					const crash = new Promise(resolve => page.on('crash', resolve))
+					const pageerror = new Promise(resolve => page.on('pageerror', resolve))
+					try {
+						await page.evaluate(bundle['app.js'].code)
+						const result = await Promise.race([ close, crash, pageerror ])
+						if (result instanceof Error) {
+							const error = result
+							if (result.message.startsWith('{')) {
+								const data = JSON.parse(error.message.replace(/^Error: /, ''))
+								console.error(data.suite_name, data.test_name)
+								console.error(data.message)
+								console.error(data.operator)
+								console.error(data.details)
+							} else {
+								console.error(error)
+							}
+							process.exit(1)
+						}
+					} catch (error) {
+						console.error(error)
+						process.exit(1)
+					}
+
+					// await browser.close()
+					// const browser = browser_run({ browser: 'electron' })
+					// await pipeline(
+					// 	Readable.from(bundle['app.js'].code),
+					// 	browser,
+					// 	process.stdout
+					// )
 				}
 			}
 	]

@@ -11,20 +11,80 @@ import { identity } from './util/identity.js'
 const compute_layout_length = (parent_length, length) =>
 	length.type === 'ratio' && parent_length.type === 'grow' ? 0 : to_css_value(length)
 
-/*
-	This function takes `to_css_value` so that `compute_style_for_layout_length` can pass a function that accounts for ratio lengths of `content` length parents
-	TODO: try to refactor so the above hopefully won't be necessary
-*/
-const compute_style_for_isolated_length = (length_name, min_length_name) =>
-	(length, to_css_value) => {
+const compute_style_for_cross_axis_height = (length, parent_length) => {
+		const { type, value } = length
+		if (type === 'grow') {
+			return value.factor > 0
+				?
+					{
+						// `alignSelf: 'stretch'` is necessary because percentage height doesn't work on children of flex rows.
+						alignSelf: 'stretch'
+					}
+				:
+					null
+		} else if (type === 'fill') {
+			return {
+				// `[length_name]: 0` prevents content from growing this length.
+				height: '0',
+				// The desired length is instead expressed by `[min_length_name]`.
+				minHeight: value.factor > 0
+					? `min(100%, ${compute_layout_length(parent_length, value.maximum)})`
+					: '0px'
+			}
+		} else if (type === 'expand') {
+			return {
+				maxHeight: '100%'
+			}
+		} else {
+			return {
+				height: compute_layout_length(parent_length, length)
+			}
+		}
+	}
+
+const compute_style_for_cross_axis_width = (length, parent_length) => {
+	const { type, value } = length
+	if (type === 'grow') {
+		return value.factor > 0
+			?
+				{
+					minWidth: '100%'
+				}
+			:
+				null
+	} else if (type === 'fill') {
+		return {
+			// `[length_name]: 0` prevents content from growing this length.
+			width: '0',
+			// The desired length is instead expressed by `[min_length_name]`.
+			minWidth: value.factor > 0
+				? `min(100%, ${compute_layout_length(parent_length, value.maximum)})`
+				: '0px'
+		}
+	} else if (type === 'expand') {
+		return {
+			maxWidth: '100%'
+		}
+	} else {
+		return {
+			width: compute_layout_length(parent_length, length)
+		}
+	}
+}
+
+// TODO: get rid of all whiteSpace, since that will now be a concern of <Text>
+const compute_style_for_relative_length = (length_name, max_length_name, min_length_name, length) => {
 		const { type, value } = length
 		if (type === 'grow') {
 			return {
+				// `[length_name]: 'max-content'` prevents text wrapping due to the default value `min-content`
 				[length_name]: 'max-content',
+				whiteSpace: 'nowrap',
 				[min_length_name]: value.factor > 0 ? '100%' : 'auto'
 			}
 		} else if (type === 'fill') {
 			return {
+				whiteSpace: 'wrap',
 				// `[length_name]: 0` prevents content from growing this length.
 				[length_name]: '0',
 				// The desired length is instead expressed by `[min_length_name]`.
@@ -32,17 +92,17 @@ const compute_style_for_isolated_length = (length_name, min_length_name) =>
 					? `min(100%, ${to_css_value(value.maximum)})`
 					: '0px'
 			}
+		} else if (type === 'expand') {
+			return {
+				[max_length_name]: '100%'
+			}
 		} else {
 			return {
+				whiteSpace: 'wrap',
 				[length_name]: to_css_value(length)
 			}
 		}
 	}
-
-// TODO: can probably get rid of these
-const compute_style_for_isolated_height = compute_style_for_isolated_length ('height', 'minHeight')
-
-const compute_style_for_isolated_width = compute_style_for_isolated_length ('width', 'minWidth')
 
 export const compute_position_style_for_relative_child = (
 	anchor_x,
@@ -61,13 +121,12 @@ export const compute_position_style_for_relative_child = (
 })
 
 export const compute_height_style_for_relative_child = height =>
-	compute_style_for_isolated_height(height, to_css_value)
+	compute_style_for_relative_length('height', 'maxHeight', 'minHeight', height)
 
 export const compute_width_style_for_relative_child = width =>
-	compute_style_for_isolated_width(width, to_css_value)
+	compute_style_for_relative_length('width', 'maxWidth', 'minWidth', width)
 
-const compute_style_for_main_axis_length = (length_name, max_length_name, min_length_name) =>
-	parent_length => length => {
+const compute_style_for_x_main_axis_length = parent_length => length => {
 		const { type, value } = length
 		if (type === 'grow') {
 			return {
@@ -76,17 +135,69 @@ const compute_style_for_main_axis_length = (length_name, max_length_name, min_le
 		} else if (type === 'fill') {
 			return {
 				flex: value.factor + ' 0 0',
-				[max_length_name]: compute_layout_length(parent_length, value.maximum),
-				// [min_length_name] must be explicitly set in order for `fill` to work on the main axis.
-				[min_length_name]: 0
+				maxWidth: compute_layout_length(parent_length, value.maximum),
+				/*
+					The default minimum is `min-content`,
+					which means the length will be no less than that of children,
+					whereas `fill` should constrain the length to the available space,
+					causing the children to overflow when there is not enough space.
+				*/
+				minWidth: 0
+			}
+		} else if (type === 'expand') {
+			return {
+				flex: `0 ${1 / value.factor} 100%`,
+				maxWidth: 'max-content',
+				minWidth: '0'
 			}
 		} else {
 			return {
+				/*
+					It is important to distinguish the semantics of `flex-basis` from `width`/`height`.
+					flex-basis of a child does not affect the height/width of a flex parent that gets its size from the child.
+					If a child is 100px wide, then for its flex parent to wrap around it and be 100px wide, the child must express `width: 100px` rather than `flex-basis: 100px`. If the child sets its width to 100px using flex-basis, then the flex parent that gets its width from that child will be 0px wide.
+				*/
 				flex: '0 0 auto',
-				[length_name]: compute_layout_length(parent_length, length)
+				width: compute_layout_length(parent_length, length)
 			}
 		}
 	}
+
+// This would ideally be the same as for the x axis, but `expand` is problematic.
+const compute_style_for_y_main_axis_length = parent_length => length => {
+		const { type, value } = length
+		if (type === 'grow') {
+			return {
+				flex: value.factor + ' 0 auto'
+			}
+		} else if (type === 'fill') {
+			return {
+				flex: value.factor + ' 0 0',
+				maxHeight: compute_layout_length(parent_length, value.maximum),
+				minHeight: 0
+			}
+		} else if (type === 'expand') {
+			/*
+				TODO: this only produces the desired behavior when there is only a single child (e.g. Box)
+			*/
+			return {
+				flex: `0 ${1 / value.factor} auto`,
+				maxHeight: '100%',
+				minHeight: '0'
+			}
+		} else {
+			return {
+				/*
+					It is important to distinguish the semantics of `flex-basis` from `width`/`height`.
+					flex-basis of a child does not affect the height/width of a flex parent that gets its size from the child.
+					If a child is 100px wide, then for its flex parent to wrap around it and be 100px wide, the child must express `width: 100px` rather than `flex-basis: 100px`. If the child sets its width to 100px using flex-basis, then the flex parent that gets its width from that child will be 0px wide.
+				*/
+				flex: '0 0 auto',
+				height: compute_layout_length(parent_length, length)
+			}
+		}
+	}
+
 
 export const compute_position_style_for_layout_child = (
 	anchor_x,
@@ -99,38 +210,36 @@ export const compute_position_style_for_layout_child = (
 })
 
 export const compute_height_style_for_layout_x_child = parent_height => height =>
-	compute_style_for_isolated_height(
+	compute_style_for_cross_axis_height(
 		height,
-		// TODO: it seems pointless/awkward to use this function here... try refactoring
-		height => compute_layout_length(parent_height, height)
+		parent_height
 	)
 
-export const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length ('width', 'maxWidth', 'minWidth')
+export const compute_width_style_for_layout_x_child = compute_style_for_x_main_axis_length // ('width', 'maxWidth', 'minWidth')
 
-export const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length ('height', 'maxHeight', 'minHeight')
+export const compute_height_style_for_layout_y_child = compute_style_for_y_main_axis_length // ('height', 'maxHeight', 'minHeight')
 
 export const compute_width_style_for_layout_y_child = parent_width => width =>
-	compute_style_for_isolated_width(
+	compute_style_for_cross_axis_width(
 		width,
-		// TODO: it seems pointless/awkward to use this function here... try refactoring
-		width => compute_layout_length(parent_width, width)
+		parent_width
 	)
 
-export const compute_wrap_and_length_style_for_layout_x_child = (parent_height, parent_width) => (child_height, child_width) => ({
-	wrap: identity,
-	style: {
-		...compute_height_style_for_layout_x_child (parent_height, child_height),
-		...compute_width_style_for_layout_x_child (parent_width, child_width)
-	}
-})
+// export const compute_wrap_and_length_style_for_layout_x_child = (parent_height, parent_width) => (child_height, child_width) => ({
+// 	wrap: identity,
+// 	style: {
+// 		...compute_height_style_for_layout_x_child (parent_height, child_height),
+// 		...compute_width_style_for_layout_x_child (parent_width, child_width)
+// 	}
+// })
 
-export const compute_wrap_and_length_style_for_layout_y_child = (parent_height, parent_width) => (child_height, child_width) => ({
-	wrap: identity,
-	style: {
-		...compute_height_style_for_layout_y_child (parent_height, child_height),
-		...compute_width_style_for_layout_y_child (parent_width, child_width)
-	}
-})
+// export const compute_wrap_and_length_style_for_layout_y_child = (parent_height, parent_width) => (child_height, child_width) => ({
+// 	wrap: identity,
+// 	style: {
+// 		...compute_height_style_for_layout_y_child (parent_height, child_height),
+// 		...compute_width_style_for_layout_y_child (parent_width, child_width)
+// 	}
+// })
 
 const cross_axis_align = {
 	'flex-start': 'flex-start',
