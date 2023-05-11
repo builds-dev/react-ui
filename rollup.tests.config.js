@@ -71,7 +71,7 @@ export default async () => ({
 		process.env.RUN === 'test'
 			&& {
 				generateBundle: async (options, bundle) => {
-					const browser = await playwright['chromium'].launch({ headless: false })
+					const browser = await playwright['chromium'].launch({ headless: true })
 					const page = await browser.newPage()
 					page.on('console', console.log)
 					const close = new Promise(resolve => page.on('close', resolve))
