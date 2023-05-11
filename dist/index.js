@@ -1,29 +1,19 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 var _extends = require('@babel/runtime/helpers/extends');
 var React = require('react');
 var require$$0 = require('react-dom');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-var _extends__default = /*#__PURE__*/_interopDefaultLegacy(_extends);
-var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
-var require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0);
 
 const create_align = flex => {
   const x = options => ({
     flex,
     ...options
   });
-
   Object.assign(x, {
     flex
   });
   return x;
 };
-
 const start = create_align('flex-start');
 const center = create_align('center');
 const end = create_align('flex-end');
@@ -39,26 +29,22 @@ const space_evenly = {
 
 var align = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	start: start,
 	center: center,
 	end: end,
 	space_around: space_around,
 	space_between: space_between,
-	space_evenly: space_evenly
+	space_evenly: space_evenly,
+	start: start
 });
 
 const css_infinity = 100000000;
-
 const convert_value = x => x === Infinity ? css_infinity : x;
-
 const type_to_css = {
   px: value => value + 'px',
-  ratio: value => value * 100 + '%',
-  math: ({
-    name,
-    parameters
-  }) => name + '(' + parameters.map(to_css_value).join(', ') + ')'
+  ratio: value => value * 100 + '%'
+  // math: ({ name, parameters }) => name + '(' + parameters.map(to_css_value).join(', ') + ')'
 };
+
 const to_css_value = ({
   type,
   value
@@ -81,6 +67,12 @@ const grow = (grow => Object.assign(grow, grow({
 const content = grow({
   factor: 0
 });
+const expand = (expand => Object.assign(expand, expand({
+  factor: 1
+})))(value => ({
+  type: 'expand',
+  value
+}));
 const fill = (fill => Object.assign(fill, fill({})))(({
   factor = 1,
   maximum = Infinity
@@ -92,31 +84,23 @@ const fill = (fill => Object.assign(fill, fill({})))(({
   }
 }));
 
-const func = name => parameters => ({
-  type: 'math',
-  value: {
-    name,
-    parameters: parameters.map(format_length)
-  }
-});
+// const func = name => parameters => ({ type: 'math', value: { name, parameters: parameters.map(format_length) } })
 
-const max = func('max');
-const min = func('min');
+// export const max = func ('max')
+
+// export const min = func ('min')
 
 const identity = x => x;
 
 function styleInject(css, ref) {
   if (ref === void 0) ref = {};
   var insertAt = ref.insertAt;
-
   if (!css || typeof document === 'undefined') {
     return;
   }
-
   var head = document.head || document.getElementsByTagName('head')[0];
   var style = document.createElement('style');
   style.type = 'text/css';
-
   if (insertAt === 'top') {
     if (head.firstChild) {
       head.insertBefore(style, head.firstChild);
@@ -126,7 +110,6 @@ function styleInject(css, ref) {
   } else {
     head.appendChild(style);
   }
-
   if (style.styleSheet) {
     style.styleSheet.cssText = css;
   } else {
@@ -141,57 +124,106 @@ styleInject(css_248z$2);
 	ratio of main axis of a content-sized parent is incoherent - the parent's size is based on the child, and the child is expressing a ratio of the parent's size.
 	ratio should mean "of space determined by the parent", which in this case is 0.
 */
-
 const compute_layout_length = (parent_length, length) => length.type === 'ratio' && parent_length.type === 'grow' ? 0 : to_css_value(length);
-/*
-	This function takes `to_css_value` so that `compute_style_for_layout_length` can pass a function that accounts for ratio lengths of `content` length parents
-	TODO: try to refactor so the above hopefully won't be necessary
-*/
-
-
-const compute_style_for_isolated_length = (length_name, min_length_name) => (length, to_css_value) => {
+const compute_style_for_cross_axis_height = (length, parent_length) => {
   const {
     type,
     value
   } = length;
+  if (type === 'grow') {
+    return value.factor > 0 ? {
+      // `alignSelf: 'stretch'` is necessary because percentage height doesn't work on children of flex rows.
+      alignSelf: 'stretch'
+    } : null;
+  } else if (type === 'fill') {
+    return {
+      // `[length_name]: 0` prevents content from growing this length.
+      height: '0',
+      // The desired length is instead expressed by `[min_length_name]`.
+      minHeight: value.factor > 0 ? `min(100%, ${compute_layout_length(parent_length, value.maximum)})` : '0px'
+    };
+  } else if (type === 'expand') {
+    return {
+      maxHeight: '100%'
+    };
+  } else {
+    return {
+      height: compute_layout_length(parent_length, length)
+    };
+  }
+};
+const compute_style_for_cross_axis_width = (length, parent_length) => {
+  const {
+    type,
+    value
+  } = length;
+  if (type === 'grow') {
+    return value.factor > 0 ? {
+      minWidth: '100%'
+    } : null;
+  } else if (type === 'fill') {
+    return {
+      // `[length_name]: 0` prevents content from growing this length.
+      width: '0',
+      // The desired length is instead expressed by `[min_length_name]`.
+      minWidth: value.factor > 0 ? `min(100%, ${compute_layout_length(parent_length, value.maximum)})` : '0px'
+    };
+  } else if (type === 'expand') {
+    return {
+      maxWidth: '100%'
+    };
+  } else {
+    return {
+      width: compute_layout_length(parent_length, length)
+    };
+  }
+};
 
+// TODO: get rid of all whiteSpace, since that will now be a concern of <Text>
+const compute_style_for_relative_length = (length_name, max_length_name, min_length_name, length) => {
+  const {
+    type,
+    value
+  } = length;
   if (type === 'grow') {
     return {
+      // `[length_name]: 'max-content'` prevents text wrapping due to the default value `min-content`
       [length_name]: 'max-content',
+      whiteSpace: 'nowrap',
       [min_length_name]: value.factor > 0 ? '100%' : 'auto'
     };
   } else if (type === 'fill') {
     return {
+      whiteSpace: 'wrap',
       // `[length_name]: 0` prevents content from growing this length.
       [length_name]: '0',
       // The desired length is instead expressed by `[min_length_name]`.
       [min_length_name]: value.factor > 0 ? `min(100%, ${to_css_value(value.maximum)})` : '0px'
     };
+  } else if (type === 'expand') {
+    return {
+      [max_length_name]: '100%'
+    };
   } else {
     return {
+      whiteSpace: 'wrap',
       [length_name]: to_css_value(length)
     };
   }
-}; // TODO: can probably get rid of these
-
-
-const compute_style_for_isolated_height = compute_style_for_isolated_length('height', 'minHeight');
-const compute_style_for_isolated_width = compute_style_for_isolated_length('width', 'minWidth');
+};
 const compute_position_style_for_relative_child = (anchor_x, anchor_y, offset_x = 0, offset_y = 0) => ({
   position: 'absolute',
   left: anchor_x[1] * 100 + '%',
   top: anchor_y[1] * 100 + '%',
   transform: anchor_x[0] === 0 && anchor_y[0] === 0 && offset_x === 0 && offset_y === 0 ? null : `translate3d(calc(${anchor_x[0] * -100}% + ${offset_x}px), calc(${anchor_y[0] * -100}% + ${offset_y}px), 0)`
 });
-const compute_height_style_for_relative_child = height => compute_style_for_isolated_height(height, to_css_value);
-const compute_width_style_for_relative_child = width => compute_style_for_isolated_width(width, to_css_value);
-
-const compute_style_for_main_axis_length = (length_name, max_length_name, min_length_name) => parent_length => length => {
+const compute_height_style_for_relative_child = height => compute_style_for_relative_length('height', 'maxHeight', 'minHeight', height);
+const compute_width_style_for_relative_child = width => compute_style_for_relative_length('width', 'maxWidth', 'minWidth', width);
+const compute_style_for_x_main_axis_length = parent_length => length => {
   const {
     type,
     value
   } = length;
-
   if (type === 'grow') {
     return {
       flex: value.factor + ' 0 auto'
@@ -199,28 +231,98 @@ const compute_style_for_main_axis_length = (length_name, max_length_name, min_le
   } else if (type === 'fill') {
     return {
       flex: value.factor + ' 0 0',
-      [max_length_name]: compute_layout_length(parent_length, value.maximum),
-      // [min_length_name] must be explicitly set in order for `fill` to work on the main axis.
-      [min_length_name]: 0
+      maxWidth: compute_layout_length(parent_length, value.maximum),
+      /*
+      	The default minimum is `min-content`,
+      	which means the length will be no less than that of children,
+      	whereas `fill` should constrain the length to the available space,
+      	causing the children to overflow when there is not enough space.
+      */
+      minWidth: 0
+    };
+  } else if (type === 'expand') {
+    return {
+      flex: `0 ${1 / value.factor} 100%`,
+      maxWidth: 'max-content',
+      minWidth: '0'
     };
   } else {
     return {
+      /*
+      	It is important to distinguish the semantics of `flex-basis` from `width`/`height`.
+      	flex-basis of a child does not affect the height/width of a flex parent that gets its size from the child.
+      	If a child is 100px wide, then for its flex parent to wrap around it and be 100px wide, the child must express `width: 100px` rather than `flex-basis: 100px`. If the child sets its width to 100px using flex-basis, then the flex parent that gets its width from that child will be 0px wide.
+      */
       flex: '0 0 auto',
-      [length_name]: compute_layout_length(parent_length, length)
+      width: compute_layout_length(parent_length, length)
     };
   }
 };
 
+// This would ideally be the same as for the x axis, but `expand` is problematic.
+const compute_style_for_y_main_axis_length = parent_length => length => {
+  const {
+    type,
+    value
+  } = length;
+  if (type === 'grow') {
+    return {
+      flex: value.factor + ' 0 auto'
+    };
+  } else if (type === 'fill') {
+    return {
+      flex: value.factor + ' 0 0',
+      maxHeight: compute_layout_length(parent_length, value.maximum),
+      minHeight: 0
+    };
+  } else if (type === 'expand') {
+    /*
+    	TODO: this only produces the desired behavior when there is only a single child (e.g. Box)
+    */
+    return {
+      flex: `0 ${1 / value.factor} auto`,
+      maxHeight: '100%',
+      minHeight: '0'
+    };
+  } else {
+    return {
+      /*
+      	It is important to distinguish the semantics of `flex-basis` from `width`/`height`.
+      	flex-basis of a child does not affect the height/width of a flex parent that gets its size from the child.
+      	If a child is 100px wide, then for its flex parent to wrap around it and be 100px wide, the child must express `width: 100px` rather than `flex-basis: 100px`. If the child sets its width to 100px using flex-basis, then the flex parent that gets its width from that child will be 0px wide.
+      */
+      flex: '0 0 auto',
+      height: compute_layout_length(parent_length, length)
+    };
+  }
+};
 const compute_position_style_for_layout_child = (anchor_x, anchor_y, offset_x, offset_y) => ({
   position: 'relative',
   transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px), calc(' + offset_y + 'px), 0)'
 });
-const compute_height_style_for_layout_x_child = parent_height => height => compute_style_for_isolated_height(height, // TODO: it seems pointless/awkward to use this function here... try refactoring
-height => compute_layout_length(parent_height, height));
-const compute_width_style_for_layout_x_child = compute_style_for_main_axis_length('width', 'maxWidth', 'minWidth');
-const compute_height_style_for_layout_y_child = compute_style_for_main_axis_length('height', 'maxHeight', 'minHeight');
-const compute_width_style_for_layout_y_child = parent_width => width => compute_style_for_isolated_width(width, // TODO: it seems pointless/awkward to use this function here... try refactoring
-width => compute_layout_length(parent_width, width));
+const compute_height_style_for_layout_x_child = parent_height => height => compute_style_for_cross_axis_height(height, parent_height);
+const compute_width_style_for_layout_x_child = compute_style_for_x_main_axis_length; // ('width', 'maxWidth', 'minWidth')
+
+const compute_height_style_for_layout_y_child = compute_style_for_y_main_axis_length; // ('height', 'maxHeight', 'minHeight')
+
+const compute_width_style_for_layout_y_child = parent_width => width => compute_style_for_cross_axis_width(width, parent_width);
+
+// export const compute_wrap_and_length_style_for_layout_x_child = (parent_height, parent_width) => (child_height, child_width) => ({
+// 	wrap: identity,
+// 	style: {
+// 		...compute_height_style_for_layout_x_child (parent_height, child_height),
+// 		...compute_width_style_for_layout_x_child (parent_width, child_width)
+// 	}
+// })
+
+// export const compute_wrap_and_length_style_for_layout_y_child = (parent_height, parent_width) => (child_height, child_width) => ({
+// 	wrap: identity,
+// 	style: {
+// 		...compute_height_style_for_layout_y_child (parent_height, child_height),
+// 		...compute_width_style_for_layout_y_child (parent_width, child_width)
+// 	}
+// })
+
 const cross_axis_align = {
   'flex-start': 'flex-start',
   'center': 'center',
@@ -229,9 +331,7 @@ const cross_axis_align = {
   'space-between': 'flex-start',
   'space-evenly': 'center'
 };
-
 const contains_size = length => length.type === 'px' || length.type === 'ratio';
-
 const compute_contain = (height, width, overflow) => (overflow && overflow.overflowX === 'hidden' && overflow.overflowY === 'hidden' ? 'layout paint' : '') + (height && width && contains_size(height) && contains_size(width) ? ' size' : '');
 const compute_style_for_layout_x_parent = (layout_x, layout_y) => ({
   alignItems: cross_axis_align[layout_y.flex],
@@ -245,20 +345,19 @@ const compute_style_for_layout_y_parent = (layout_x, layout_y) => ({
 });
 const box = "box_bb7yjy4";
 const column = "column_c1m6442m";
-const row = "row_r8o4g34"; // TODO: expressions within this and/or the functions it calls could `useMemo`
+const row = "row_r8o4g34";
 
+// TODO: expressions within this and/or the functions it calls could `useMemo`
 const use_computation_y_context_value = (height, width) => (child_height, child_width) => [compute_height_style_for_layout_y_child(height)(child_height), compute_width_style_for_layout_y_child(width)(child_width), identity];
 
 const join_classnames = (...a) => {
   if (a[0]) {
     let x = a[0];
-
     for (let i = 1; i < a.length; ++i) {
       if (a[i]) {
         x = x + ' ' + a[i];
       }
     }
-
     return x;
   }
 };
@@ -273,18 +372,14 @@ const Box_child_computation_context = /*#__PURE__*/React.createContext();
 const Box_child_position_style_context = /*#__PURE__*/React.createContext();
 
 var createRoot;
-
-var m = require$$0__default["default"];
-
+var m = require$$0;
 if (process.env.NODE_ENV === 'production') {
   createRoot = m.createRoot;
   m.hydrateRoot;
 } else {
   var i = m.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-
   createRoot = function (c, o) {
     i.usingClientEntryPoint = true;
-
     try {
       return m.createRoot(c, o);
     } finally {
@@ -297,35 +392,26 @@ const map = f => x => React.useMemo(() => f(x), [x]);
 const map_all = f => (...x) => React.useMemo(() => f(...x), x);
 
 const random_id = () => window.crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
-
 const Stack_context = /*#__PURE__*/React.createContext();
-
 const find_insert_index = (nodes, node) => {
   let i = nodes.size;
-
   while (i > 0) {
     const x = node.compareDocumentPosition(nodes.get(i - 1));
-
     if (x & Node.DOCUMENT_POSITION_PRECEDING) {
       break;
     }
-
     --i;
   }
-
   return i;
 };
-
 const assign_keys = elements => elements.map((x, index) => x ? x.key === null ? /*#__PURE__*/React.cloneElement(x, {
   key: index
 }) : null : null);
-
 const compute_style_for_distant_length = (length_name, min_length_name) => parent_px => length => {
   const {
     type,
     value
   } = length;
-
   if (type === 'grow') {
     return {
       [length_name]: 'max-content',
@@ -346,10 +432,8 @@ const compute_style_for_distant_length = (length_name, min_length_name) => paren
     };
   }
 };
-
 const compute_style_for_distant_height = compute_style_for_distant_length('height', 'minHeight');
 const compute_style_for_distant_width = compute_style_for_distant_length('width', 'minWidth');
-
 const Representative = ({
   node,
   origin_node,
@@ -362,37 +446,30 @@ const Representative = ({
     if (!node) {
       return;
     }
-
     let frame_request_id;
     let cached_rect = {};
     let cached_origin_rect = {};
-
     const loop = () => {
       frame_request_id = window.requestAnimationFrame(() => {
         const rect = node.getBoundingClientRect();
         const origin_rect = origin_node.getBoundingClientRect();
-
         if (rect.height !== cached_rect.height) {
           set_node_height(rect.height);
         }
-
         if (rect.width !== cached_rect.width) {
           set_node_width(rect.width);
         }
-
         if (rect.left !== cached_rect.left || rect.top !== cached_rect.top || origin_rect.left !== cached_origin_rect.left || origin_rect.top !== cached_origin_rect.top) {
           set_position_offset({
             left: rect.left - origin_rect.left,
             top: rect.top - origin_rect.top
           });
         }
-
         cached_rect = rect;
         cached_origin_rect = origin_rect;
         loop();
       });
     };
-
     loop();
     return () => window.cancelAnimationFrame(frame_request_id);
   }, [node]);
@@ -403,17 +480,16 @@ const Representative = ({
   } : {
     position: 'absolute',
     transform: `translate3d(calc(${anchor_x[0] * -100}% + ${position_offset.left + parent_width * anchor_x[1] + offset_x}px), calc(${anchor_y[0] * -100}% + ${position_offset.top + parent_height * anchor_y[1] + offset_y}px), 0)`
-  })(position_offset, node_height, node_width); // TODO: useMemo? All the child height/width context stuff is an inefficient mess.
+  })(position_offset, node_height, node_width);
 
+  // TODO: useMemo? All the child height/width context stuff is an inefficient mess.
   const child_computation_context_value = (height, width) => [box_child_height_style_context_value(height), box_child_width_style_context_value(width), identity];
-
-  return /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+  return /*#__PURE__*/React.createElement(Box_child_computation_context.Provider, {
     value: child_computation_context_value
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
+  }, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
     value: box_child_position_style_context_value
   }, children));
 };
-
 const Stack = ({
   children
 }) => {
@@ -425,7 +501,6 @@ const Stack = ({
       ascendant_groups: [],
       descendant_groups: [],
       indexes: new Map(),
-
       /*
       	`initializing` is used to avoid comparing dom nodes to determine the index of a component when a component registers during the first render of a `Stack`.
       	During the first render, every call to `register` should be for a subsequent component in the source order, so it will just use the next index.
@@ -434,6 +509,7 @@ const Stack = ({
       members: new Map(),
       register: node => {
         const id = random_id();
+
         /*
         const index = state.members.size === 0
         	? 0
@@ -441,7 +517,6 @@ const Stack = ({
         */
 
         const index = state.initializing ? state.members.size : find_insert_index(state.indexes, node);
-
         for (let i = state.members.size - 1; i >= index; --i) {
           const node = state.indexes.get(i);
           const index = i + 1;
@@ -450,13 +525,12 @@ const Stack = ({
           state.ascendant_groups[index] = state.ascendant_groups[i];
           state.descendant_groups[index] = state.descendant_groups[i];
         }
-
         state.members.set(node, index);
         state.indexes.set(index, node);
         return {
           update_ascendants: ascendants => {
             const index = state.members.get(node);
-            state.ascendant_groups[index] = /*#__PURE__*/React__default["default"].createElement(Representative, {
+            state.ascendant_groups[index] = /*#__PURE__*/React.createElement(Representative, {
               key: id,
               node: node,
               origin_node: stack_dom_ref.current.parentNode
@@ -465,7 +539,7 @@ const Stack = ({
           },
           update_descendants: descendants => {
             const index = state.members.get(node);
-            state.descendant_groups[index] = /*#__PURE__*/React__default["default"].createElement(Representative, {
+            state.descendant_groups[index] = /*#__PURE__*/React.createElement(Representative, {
               key: id,
               node: node,
               origin_node: stack_dom_ref.current.parentNode
@@ -476,7 +550,6 @@ const Stack = ({
             const index = state.members.get(node);
             state.members.delete(node);
             state.indexes.delete(index);
-
             for (let i = index + 1; i < state.members.size; ++i) {
               const node = state.indexes.get(i);
               const index = i - 1;
@@ -487,7 +560,6 @@ const Stack = ({
               delete state.ascendant_groups[i];
               delete state.descendant_groups[i];
             }
-
             set_ascendants(state.ascendant_groups.flat());
             set_descendants(state.descendant_groups.flat());
           }
@@ -499,20 +571,18 @@ const Stack = ({
   React.useEffect(() => {
     state.initializing = false;
   }, [state]);
-  return /*#__PURE__*/React__default["default"].createElement(React__default["default"].Fragment, null, /*#__PURE__*/React__default["default"].createElement("div", {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'none'
     },
     ref: stack_dom_ref
-  }), /*#__PURE__*/React__default["default"].createElement(Stack_context.Provider, {
+  }), /*#__PURE__*/React.createElement(Stack_context.Provider, {
     value: state
-  }, descendants.length ? /*#__PURE__*/React__default["default"].createElement(Stack, null, descendants) : null, children, ascendants.length ? /*#__PURE__*/React__default["default"].createElement(Stack, null, ascendants) : null));
+  }, descendants.length ? /*#__PURE__*/React.createElement(Stack, null, descendants) : null, children, ascendants.length ? /*#__PURE__*/React.createElement(Stack, null, ascendants) : null));
 };
 
 const call5 = (f, a, b, c, d, e) => f(a, b, c, d, e);
-
 const create_object = () => Object.create(null);
-
 const combine_component_styles = (contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, width_style_as_layout_box_child, position_style_as_layout_box_child, prop_style) => ({
   contain,
   padding,
@@ -523,18 +593,16 @@ const combine_component_styles = (contain, overflow, padding, style_as_layout_pa
   ...position_style_as_layout_box_child,
   ...prop_style
 });
-
 const relative_child_computation_context_value = (height, width) => [compute_height_style_for_relative_child(height), compute_width_style_for_relative_child(width), identity];
-
-const with_default_key = (x, default_key) => x.key === null ? /*#__PURE__*/React__default["default"].cloneElement(x, {
+const with_default_key = (x, default_key) => x.key === null ? /*#__PURE__*/React.cloneElement(x, {
   key: default_key
 }) : x;
-
-const prepare_relatives = relatives => relatives ? /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+const prepare_relatives = relatives => relatives ? /*#__PURE__*/React.createElement(Box_child_computation_context.Provider, {
   value: relative_child_computation_context_value
-}, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
+}, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
   value: compute_position_style_for_relative_child
 }, relatives.map(with_default_key))) : null;
+
 /*
 	Layout boxes do not know whether they are layout children or relatives, nor anything about their parent.
 	A layout box must consume a function from context that interprets its props according to the parent's concerns.
@@ -559,19 +627,12 @@ const prepare_relatives = relatives => relatives ? /*#__PURE__*/React__default["
 		- compute_width_style_for_layout_child
 */
 
-
 const anchor_default = [0, 0];
-
 const prepare_anchor = x => x || anchor_default;
-
 const prepare_layout = x => x || start;
-
 const prepare_length = x => x == undefined ? content : format_length(x);
-
 const prepare_padding = x => x && padding_to_css(x);
-
 const prepare_tag = x => x || 'div';
-
 const Layout_box = /*#__PURE__*/React.forwardRef(({
   ascended,
   anchor_x: prop_anchor_x,
@@ -618,11 +679,9 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
     if (!ref.current) {
       return;
     }
-
     if (ascended && ascended.length && !state.stack) {
       state.stack = stack.register(ref.current);
     }
-
     if (state.stack) {
       state.stack.update_ascendants(ascended || []);
     }
@@ -631,11 +690,9 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
     if (!ref.current) {
       return;
     }
-
     if (descended && descended.length && !state.stack) {
       state.stack = stack.register(ref.current);
     }
-
     if (state.stack) {
       state.stack.update_descendants(descended || []);
     }
@@ -644,13 +701,13 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
   const child_computation_context_value = use_computation_context_value(height, width);
   const background = map(prepare_relatives)(prop_background);
   const foreground = map(prepare_relatives)(prop_foreground);
-  return context_transform( /*#__PURE__*/React__default["default"].createElement(Tag, _extends__default["default"]({}, element_props, {
+  return context_transform( /*#__PURE__*/React.createElement(Tag, _extends({}, element_props, {
     className: className,
     ref: ref,
     style: style
-  }), background, /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+  }), background, /*#__PURE__*/React.createElement(Box_child_computation_context.Provider, {
     value: child_computation_context_value
-  }, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
+  }, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
     value: compute_position_style_for_layout_child
   }, children)), foreground));
 });
@@ -659,18 +716,17 @@ const Layout_box = /*#__PURE__*/React.forwardRef(({
 	TODO: limit to one child: {React.Children.only(props.children)}
 	Multiple words of text count as multiple children, so text cannot be direct children if this is in place.
 */
-
 const Box = /*#__PURE__*/React.forwardRef(({
   children,
   ...props
-}, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+}, ref) => /*#__PURE__*/React.createElement(Layout_box, _extends({
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   use_computation_context_value: use_computation_y_context_value,
   layout_class_name: box,
   ref: ref
 }, props), children));
 
-const Column = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+const Column = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React.createElement(Layout_box, _extends({
   compute_style_as_layout_parent: compute_style_for_layout_y_parent,
   use_computation_context_value: use_computation_y_context_value,
   layout_class_name: column,
@@ -700,14 +756,15 @@ const inject_style = string => {
   return () => style.remove();
 };
 
-const child_computation_context_value = (height, width) => [compute_height_style_for_layout_x_child(fill)(height), compute_width_style_for_layout_x_child(fill)(width), identity]; // TODO: accept only one child!
+// TODO: expressions within this and/or the functions it calls could `useMemo`
+const child_computation_context_value = (height, width) => [compute_height_style_for_layout_x_child(fill)(height), compute_width_style_for_layout_x_child(fill)(width), identity];
 
-
+// TODO: accept only one child!
 const Ui_Context = ({
   children
-}) => /*#__PURE__*/React__default["default"].createElement(Stack, null, /*#__PURE__*/React__default["default"].createElement(Box_child_computation_context.Provider, {
+}) => /*#__PURE__*/React.createElement(Stack, null, /*#__PURE__*/React.createElement(Box_child_computation_context.Provider, {
   value: child_computation_context_value
-}, /*#__PURE__*/React__default["default"].createElement(Box_child_position_style_context.Provider, {
+}, /*#__PURE__*/React.createElement(Box_child_position_style_context.Provider, {
   value: compute_position_style_for_layout_child
 }, children)));
 
@@ -735,19 +792,17 @@ const create_mount_to_body = ({
 }) => options => App => {
   const root_element = document.createElement('div');
   const root = createRoot(root_element);
-
   const unmount = () => {
     root.unmount();
     root_element.remove();
     uninject_body_style();
   };
-
   root_element.classList.add(body_root_element);
   const uninject_body_style = inject_body_style();
   document.body.append(root_element);
   return {
     unmount,
-    render: props => root.render( /*#__PURE__*/React__default["default"].createElement(Ui_Context, null, /*#__PURE__*/React__default["default"].createElement(App, props)))
+    render: props => root.render( /*#__PURE__*/React.createElement(Ui_Context, null, /*#__PURE__*/React.createElement(App, props)))
   };
 };
 const mount_to_body = create_mount_to_body({
@@ -810,12 +865,12 @@ const visible = {
 
 var overflow = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	overscroll_default: overscroll_default,
-	overscroll_disabled: overscroll_disabled,
-	overscroll_contained: overscroll_contained,
 	clip: clip,
 	clip_x: clip_x,
 	clip_y: clip_y,
+	overscroll_contained: overscroll_contained,
+	overscroll_default: overscroll_default,
+	overscroll_disabled: overscroll_disabled,
 	scroll: scroll,
 	scroll_x: scroll_x,
 	scroll_y: scroll_y,
@@ -826,20 +881,16 @@ var css_248z = ".row_height_fill_child_wrapper_rpzldh1 {\n\talign-self: stretch;
 styleInject(css_248z);
 
 const row_height_fill_child_wrapper = "row_height_fill_child_wrapper_rpzldh1";
-
-const wrap = (component, parent_width, child_width) => /*#__PURE__*/React__default["default"].createElement("div", {
+const wrap = (component, parent_width, child_width) => /*#__PURE__*/React.createElement("div", {
   className: row_height_fill_child_wrapper,
   style: compute_width_style_for_layout_x_child(parent_width)(child_width)
 }, component);
-
 const wrap_height_fill_child = (height, width) => (child_height, child_width) => child_height.type === 'fill' ? [compute_height_style_for_layout_x_child(height)(child_height), null, component => wrap(component, width, child_width)] : not_wrapped(height, width)(child_height, child_width);
+const not_wrapped = (height, width) => (child_height, child_width) => [compute_height_style_for_layout_x_child(height)(child_height), compute_width_style_for_layout_x_child(width)(child_width), identity];
 
-const not_wrapped = (height, width) => (child_height, child_width) => [compute_height_style_for_layout_x_child(height)(child_height), compute_width_style_for_layout_x_child(width)(child_width), identity]; // TODO: expressions within this and/or the functions it calls could `useMemo`
-
-
+// TODO: expressions within this and/or the functions it calls could `useMemo`
 const use_computation_context_value = (height, width) => (height.type === 'grow' ? wrap_height_fill_child : not_wrapped)(height, width);
-
-const Row = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React__default["default"].createElement(Layout_box, _extends__default["default"]({
+const Row = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React.createElement(Layout_box, _extends({
   compute_style_as_layout_parent: compute_style_for_layout_x_parent,
   use_computation_context_value: use_computation_context_value,
   layout_class_name: row,
@@ -858,12 +909,11 @@ exports.body_root_element = body_root_element;
 exports.content = content;
 exports.create_mount_to_body = create_mount_to_body;
 exports.edges = edges;
+exports.expand = expand;
 exports.fill = fill;
 exports.format_length = format_length;
 exports.grow = grow;
 exports.inject_body_style = inject_body_style;
-exports.max = max;
-exports.min = min;
 exports.mount_to_body = mount_to_body;
 exports.overflow = overflow;
 exports.px = px;
