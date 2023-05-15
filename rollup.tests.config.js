@@ -4,7 +4,6 @@ import babel from '@rollup/plugin-babel'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
-import browser_run from 'browser-run'
 import glob_module_files from 'glob-module-file'
 import _linaria from '@linaria/rollup'
 import babel_config from './.babelrc.json' assert { type: 'json' }
