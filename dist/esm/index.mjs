@@ -1,4 +1,3 @@
-import _extends from '@babel/runtime/helpers/extends';
 import React, { createContext, useMemo, useRef, useState, useEffect, cloneElement, forwardRef, useImperativeHandle, useContext } from 'react';
 import require$$0 from 'react-dom';
 
@@ -34,6 +33,21 @@ var align = /*#__PURE__*/Object.freeze({
 	space_evenly: space_evenly,
 	start: start
 });
+
+function _extends() {
+  _extends = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+    return target;
+  };
+  return _extends.apply(this, arguments);
+}
 
 const css_infinity = 100000000;
 const convert_value = x => x === Infinity ? css_infinity : x;
