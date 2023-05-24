@@ -37,7 +37,7 @@ const assign_keys = elements =>
 	elements
 		.map((x, index) =>
 			x
-				? x.key === null ? cloneElement(x, { key: index }) : null
+				? x.key === null ? cloneElement(x, { key: index }) : x
 				: null
 		)
 
