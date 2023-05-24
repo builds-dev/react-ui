@@ -420,7 +420,7 @@ const find_insert_index = (nodes, node) => {
 };
 const assign_keys = elements => elements.map((x, index) => x ? x.key === null ? /*#__PURE__*/React.cloneElement(x, {
   key: index
-}) : null : null);
+}) : x : null);
 const compute_style_for_distant_length = (length_name, min_length_name) => parent_px => length => {
   const {
     type,
