@@ -31,7 +31,6 @@ const plugins = [
 
 export default {
 	external: [
-		// /@babel\/runtime/,
 		...Object.keys(pkg.peerDependencies)
 	],
 	input: './src/index.js',
