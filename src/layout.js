@@ -206,7 +206,7 @@ export const compute_position_style_for_layout_child = (
 	offset_y
 ) => ({
 	position: 'relative',
-	transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px), calc(' + offset_y + 'px), 0)'
+	transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px, ' + offset_y + 'px, 0)'
 })
 
 export const compute_height_style_for_layout_x_child = parent_height => height =>
