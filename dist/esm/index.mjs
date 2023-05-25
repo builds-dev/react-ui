@@ -698,7 +698,7 @@ const Layout_box = /*#__PURE__*/forwardRef(({
       state.stack.update_ascendants(ascended || []);
     }
     return () => {
-      if (state.stack && ascended.length === 0 && descended.length === 0) {
+      if (state.stack && !ascended?.length && !descended?.length) {
         state.stack.unregister();
         state.stack = null;
       }
@@ -715,7 +715,7 @@ const Layout_box = /*#__PURE__*/forwardRef(({
       state.stack.update_descendants(descended || []);
     }
     return () => {
-      if (state.stack && ascended.length === 0 && descended.length === 0) {
+      if (state.stack && !ascended?.length && !descended?.length) {
         state.stack.unregister();
         state.stack = null;
       }
