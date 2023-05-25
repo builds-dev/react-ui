@@ -760,20 +760,27 @@ const Column = /*#__PURE__*/React.forwardRef((props, ref) => /*#__PURE__*/React.
   ref: ref
 }, props)));
 
+const x = n => ({
+  left: n,
+  right: n
+});
+const y = n => ({
+  top: n,
+  bottom: n
+});
+const xy = a => b => ({
+  ...x(a),
+  ...y(b)
+});
 const edges = Object.assign(n => ({
   top: n,
   bottom: n,
   left: n,
   right: n
 }), {
-  x: n => ({
-    left: n,
-    right: n
-  }),
-  y: n => ({
-    top: n,
-    bottom: n
-  })
+  x,
+  xy,
+  y
 });
 
 const inject_style = string => {
