@@ -697,6 +697,12 @@ const Layout_box = /*#__PURE__*/forwardRef(({
     if (state.stack) {
       state.stack.update_ascendants(ascended || []);
     }
+    return () => {
+      if (state.stack && ascended.length === 0 && descended.length === 0) {
+        state.stack.unregister();
+        state.stack = null;
+      }
+    };
   }, [ascended, ref.current]);
   useEffect(() => {
     if (!ref.current) {
@@ -708,7 +714,14 @@ const Layout_box = /*#__PURE__*/forwardRef(({
     if (state.stack) {
       state.stack.update_descendants(descended || []);
     }
+    return () => {
+      if (state.stack && ascended.length === 0 && descended.length === 0) {
+        state.stack.unregister();
+        state.stack = null;
+      }
+    };
   }, [descended, ref.current]);
+  useEffect(() => () => state.stack && state.state.unregister(), []);
   const style = map_all(combine_component_styles)(contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, width_style_as_layout_box_child, position_style_as_layout_box_child, prop_style);
   const child_computation_context_value = use_computation_context_value(height, width);
   const background = map(prepare_relatives)(prop_background);
