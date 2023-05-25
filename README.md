@@ -114,7 +114,7 @@ default: `align.start`
 
 ##### `padding={{ bottom = 0, left = 0, right = 0, top = 0 }}`
 
-Apply padding to the inner edges of the box. For convenience, use `edges (n)`, `edges.x (n)` and `edges.y (n)`.
+Apply padding to the inner edges of the box. For convenience, use `edges (n)`, `edges.x (n)` `edges.y (n)`, and `edges.xy (nx) (ny)`.
 
 ```jsx
 import { Box, edges } from '#ui'
@@ -128,6 +128,10 @@ import { Box, edges } from '#ui'
 {/* These are equivalent: */}
 <Box padding={{ top: 10, bottom: 10 }}></Box>
 <Box padding={edges.y (10)}></Box>
+
+{/* These are equivalent: */}
+<Box padding={{ bottom: 20, left: 10, right: 10, top: 20 }}></Box>
+<Box padding={edges.xy (10) (20)}></Box>
 
 {/* These are equivalent: */}
 <Box padding={{ bottom: 10, left: 10, right: 10, top: 10 }}></Box>
@@ -173,6 +177,10 @@ Shorthand for `{ left: number, right: number }`.
 ##### `edges.y (number)`
 
 Shorthand for `{ bottom: number, top: number }`.
+
+##### `edges.xy (number_x) (number_y)`
+
+Shorthand for `{ bottom: number_y, left: number_x, right: number_x, top: number_y }`.
 
 #### layout
 
