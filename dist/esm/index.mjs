@@ -310,7 +310,7 @@ const compute_style_for_y_main_axis_length = parent_length => length => {
 };
 const compute_position_style_for_layout_child = (anchor_x, anchor_y, offset_x, offset_y) => ({
   position: 'relative',
-  transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px), calc(' + offset_y + 'px), 0)'
+  transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px, ' + offset_y + 'px, 0)'
 });
 const compute_height_style_for_layout_x_child = parent_height => height => compute_style_for_cross_axis_height(height, parent_height);
 const compute_width_style_for_layout_x_child = compute_style_for_x_main_axis_length; // ('width', 'maxWidth', 'minWidth')
