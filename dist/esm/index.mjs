@@ -721,7 +721,7 @@ const Layout_box = /*#__PURE__*/forwardRef(({
       }
     };
   }, [descended, ref.current]);
-  useEffect(() => () => state.stack && state.state.unregister(), []);
+  useEffect(() => () => state.stack && state.stack.unregister(), []);
   const style = map_all(combine_component_styles)(contain, overflow, padding, style_as_layout_parent, height_style_as_layout_box_child, width_style_as_layout_box_child, position_style_as_layout_box_child, prop_style);
   const child_computation_context_value = use_computation_context_value(height, width);
   const background = map(prepare_relatives)(prop_background);
