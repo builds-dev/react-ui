@@ -182,6 +182,12 @@ export const Layout_box = forwardRef((
 			if (state.stack) {
 				state.stack.update_ascendants(ascended || [])
 			}
+			return () => {
+				if (state.stack && ascended.length === 0 && descended.length === 0) {
+					state.stack.unregister()
+					state.stack = null
+				}
+			}
 		},
 		[ ascended, ref.current ]
 	)
@@ -197,8 +203,19 @@ export const Layout_box = forwardRef((
 			if (state.stack) {
 				state.stack.update_descendants(descended || [])
 			}
+			return () => {
+				if (state.stack && ascended.length === 0 && descended.length === 0) {
+					state.stack.unregister()
+					state.stack = null
+				}
+			}
 		},
 		[ descended, ref.current ]
+	)
+
+	useEffect(
+		() => () => state.stack && state.state.unregister(),
+		[]
 	)
 
 	const style = map_all
