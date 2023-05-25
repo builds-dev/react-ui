@@ -214,7 +214,7 @@ export const Layout_box = forwardRef((
 	)
 
 	useEffect(
-		() => () => state.stack && state.state.unregister(),
+		() => () => state.stack && state.stack.unregister(),
 		[]
 	)
 
