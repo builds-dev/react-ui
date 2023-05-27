@@ -562,16 +562,16 @@ const Stack = ({
             const index = state.members.get(node);
             state.members.delete(node);
             state.indexes.delete(index);
-            for (let i = index + 1; i < state.members.size; ++i) {
-              const node = state.indexes.get(i);
-              const index = i - 1;
-              state.members.set(node, index);
-              state.indexes.set(index, node);
-              state.ascendant_groups[index] = state.ascendant_groups[i];
-              state.descendant_groups[index] = state.descendant_groups[i];
-              delete state.ascendant_groups[i];
-              delete state.descendant_groups[i];
+            for (let i = index; i < state.members.size; ++i) {
+              const node = state.indexes.get(i + 1);
+              state.members.set(node, i);
+              state.indexes.set(i, node);
+              state.indexes.delete(i + 1);
+              state.ascendant_groups[i] = state.ascendant_groups[i + 1];
+              state.descendant_groups[i] = state.descendant_groups[i + 1];
             }
+            state.ascendant_groups.pop();
+            state.descendant_groups.pop();
             set_ascendants(state.ascendant_groups.flat());
             set_descendants(state.descendant_groups.flat());
           }
