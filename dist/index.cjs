@@ -310,7 +310,7 @@ const compute_style_for_y_main_axis_length = parent_length => length => {
     };
   }
 };
-const compute_position_style_for_layout_child = (anchor_x, anchor_y, offset_x, offset_y) => ({
+const compute_position_style_for_layout_child = (anchor_x, anchor_y, offset_x = 0, offset_y = 0) => ({
   position: 'relative',
   transform: (offset_x || offset_y) && 'translate3d(' + offset_x + 'px, ' + offset_y + 'px, 0)'
 });
